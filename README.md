@@ -1,2 +1,2 @@
-# webflow
-🚀 A modern full-stack web development project with clean UI/UX, dynamic components, and seamless backend integration
+# Sistem Informasi Manajemen Perpustakaan
+Sistem informasi manajemen perpustakaan yang dirancang untuk mengelola aktivitas perpustakaan secara efisien, dengan fitur multi-role yang memungkinkan peran berbeda bagi pengguna, seperti Admin dan Pengunjung. Admin dapat mengelola data buku, anggota, serta memonitor peminjaman dan pengembalian buku, sementara Pengunjung dapat mencari buku, melakukan peminjaman, dan mengakses informasi terkait koleksi perpustakaan. Sistem ini bertujuan untuk meningkatkan kenyamanan dan efisiensi dalam pengelolaan perpustakaan dengan antarmuka yang mudah digunakan untuk setiap peran
