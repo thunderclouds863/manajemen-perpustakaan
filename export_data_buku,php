@@ -1,0 +1,24 @@
+<?php
+// Koneksi ke database
+$conn = new mysqli("localhost", "username", "password", "nama_database");
+
+if ($conn->connect_error) {
+    die("Koneksi gagal: " . $conn->connect_error);
+}
+
+// Baca file CSV
+if (($handle = fopen("data.csv", "r")) !== FALSE) {
+    while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+        // Masukkan data ke database
+        $sql = "INSERT INTO data_spreadsheet (nama, email, usia)
+                VALUES ('{$data[0]}', '{$data[1]}', {$data[2]})";
+        $conn->query($sql);
+    }
+    fclose($handle);
+    echo "Data berhasil dimasukkan!";
+} else {
+    echo "Gagal membaca file CSV.";
+}
+
+$conn->close();
+?>
