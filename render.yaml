@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: perpustakaan-demo
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
