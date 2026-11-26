@@ -1,4 +1,8 @@
 {
+    "name": "rbti-undip/manajemen-perpustakaan",
+    "description": "Sistem Informasi Manajemen Perpustakaan Ruang Baca Teknik Industri (RBTI) UNDIP",
+    "type": "project",
+    "license": "MIT",
     "require": {
         "phpoffice/phpspreadsheet": "^3.5"
     }

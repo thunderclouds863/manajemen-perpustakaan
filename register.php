@@ -1,466 +1,240 @@
+<?php
+session_start();
+$flashError = $_SESSION['error'] ?? null;
+$flashSuccess = $_SESSION['success'] ?? null;
+unset($_SESSION['error'], $_SESSION['success']);
+?>
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistem Informasi Ruang Baca</title>
-  <!-- FontAwesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <!-- Bootstrap Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
-  <!-- Animate.css -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
-    }
-
-    body {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: #333;
-      min-height: 100vh;
-      padding: 20px 0;
-      overflow-y: auto;
-    }
-
-    .container {
-      background: rgba(255, 255, 255, 0.95);
-      width: 90%;
-      max-width: 500px;
-      margin: 20px auto;
-      padding: 30px;
-      border-radius: 20px;
-      box-shadow: 0 10px 50px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(10px);
-    }
-
-    .logo-container {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-
-    .logo {
-      width: 120px;
-      height: 120px;
-      margin-bottom: 15px;
-      animation: float 3s ease-in-out infinite;
-    }
-
-    @keyframes float {
-      0% {
-        transform: translateY(0px);
-      }
-
-      50% {
-        transform: translateY(-10px);
-      }
-
-      100% {
-        transform: translateY(0px);
-      }
-    }
-
-    h1 {
-      font-size: 2.2rem;
-      color: #2c3e50;
-      margin-bottom: 20px;
-      text-align: center;
-      font-weight: 700;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .form-section {
-      display: none;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 0.5s ease;
-    }
-
-    .form-section.active {
-      display: block;
-      opacity: 1;
-      transform: translateY(0);
-      animation: slideUp 0.5s ease forwards;
-    }
-
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .input-group {
-      position: relative;
-      margin-bottom: 25px;
-    }
-
-    .input-group i {
-      position: absolute;
-      left: 15px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #666;
-    }
-
-    input {
-      width: 100%;
-      padding: 15px 15px 15px 45px;
-      border: 2px solid #e0e0e0;
-      border-radius: 10px;
-      font-size: 1rem;
-      transition: all 0.3s ease;
-    }
-
-    input:focus {
-      border-color: #667eea;
-      box-shadow: 0 0 15px rgba(102, 126, 234, 0.1);
-      outline: none;
-    }
-
-    .btn {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 12px 25px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 1rem;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      transition: all 0.3s ease;
-      width: 100%;
-      margin: 10px 0;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-    }
-
-    .btn:active {
-      transform: translateY(0);
-    }
-
-    .btn-outline {
-      background: transparent;
-      border: 2px solid #667eea;
-      color: #667eea;
-    }
-
-    .btn-outline:hover {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-    }
-
-    .options {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 20px;
-    }
-
-    .divider {
-      display: flex;
-      align-items: center;
-      text-align: center;
-      margin: 20px 0;
-    }
-
-    .divider::before,
-    .divider::after {
-      content: '';
-      flex: 1;
-      border-bottom: 1px solid #e0e0e0;
-    }
-
-    .divider span {
-      padding: 0 10px;
-      color: #666;
-      font-size: 0.9rem;
-    }
-
-    .alert {
-      padding: 15px;
-      border-radius: 10px;
-      margin: 15px 0;
-      display: none;
-    }
-
-    .alert-success {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-
-    .alert-error {
-      background: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-
-    .feature-icons {
-      display: flex;
-      justify-content: center;
-      gap: 30px;
-      margin: 30px 0;
-    }
-
-    .feature-icon {
-      text-align: center;
-      color: #667eea;
-    }
-
-    .feature-icon i {
-      font-size: 2rem;
-      margin-bottom: 10px;
-    }
-
-    .loading-spinner {
-      display: none;
-      text-align: center;
-      margin: 20px 0;
-    }
-
-    .loading-spinner i {
-      font-size: 2rem;
-      color: #667eea;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-  </style>
+  <title>Masuk — Ruang Baca Teknik Industri UNDIP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/rbti.css">
 </head>
-
-<body>
-  <div class="container">
-    <div class="logo-container">
-      <img src="https://cdn-icons-png.flaticon.com/512/2232/2232688.png" alt="Library Logo" class="logo">
-      <h1><i class="fas fa-book-reader"></i> Ruang Baca Teknik Industri</h1>
-    </div>
-
-    <div class="feature-icons">
-      <div class="feature-icon">
-        <i class="fas fa-book"></i>
-        <p>Buku</p>
+<body class="rbti-auth-page">
+  <main class="rbti-auth-shell">
+    <div class="rbti-auth-card">
+      <div class="rbti-auth-header">
+        <img src="undip.png" alt="Logo Universitas Diponegoro" class="rbti-auth-emblem">
+        <h1 class="rbti-auth-title">Ruang Baca Teknik Industri</h1>
+        <p class="rbti-auth-subtitle">Fakultas Teknik · Universitas Diponegoro</p>
       </div>
-      <div class="feature-icon">
-        <i class="fas fa-users"></i>
-        <p>Komunitas</p>
-      </div>
-      <div class="feature-icon">
-        <i class="fas fa-graduation-cap"></i>
-        <p>Edukasi</p>
-      </div>
-    </div>
 
-    <!-- Visitor Section -->
-    <div class="form-section active" id="visitor-section">
-      <h2 class="text-center mb-4">Masuk Sebagai Pengunjung</h2>
-      <form id="visitor-form" action="login-visitor.php" method="POST">
-        <div class="input-group">
-          <i class="fas fa-user"></i>
-          <input type="text" name="name" placeholder="Nama Lengkap" required>
+      <?php if ($flashError): ?>
+        <div class="rbti-auth-alert rbti-auth-alert--error" role="alert">
+          <i class="fas fa-circle-exclamation mt-1"></i>
+          <span><?= htmlspecialchars($flashError) ?></span>
         </div>
-        <div class="input-group">
-          <i class="fas fa-envelope"></i>
-          <input type="email" name="email" placeholder="Email" required>
-        </div>
-        <button type="submit" class="btn">
-          <i class="fas fa-sign-in-alt"></i> Masuk
-        </button>
-      </form>
+      <?php endif; ?>
 
-      <div class="divider">
-        <span>atau</span>
-      </div>
-      <div class="options">
-        <button class="btn btn-outline" id="go-to-member">
-          <i class="fas fa-user-graduate"></i> Masuk Sebagai Anggota
+      <?php if ($flashSuccess): ?>
+        <div class="rbti-auth-alert rbti-auth-alert--success" role="status">
+          <i class="fas fa-circle-check mt-1"></i>
+          <span><?= htmlspecialchars($flashSuccess) ?></span>
+        </div>
+      <?php endif; ?>
+
+      <div class="rbti-role-tabs" role="tablist" aria-label="Pilih peran masuk">
+        <button type="button" class="rbti-role-tab active" data-target="visitor" role="tab" aria-selected="true" id="tab-visitor">
+          <i class="fas fa-user"></i> Pengunjung
         </button>
-        <button class="btn btn-outline" id="go-to-admin">
-          <i class="fas fa-user-shield"></i> Admin Login
+        <button type="button" class="rbti-role-tab" data-target="member" role="tab" aria-selected="false" id="tab-member">
+          <i class="fas fa-user-graduate"></i> Anggota
+        </button>
+        <button type="button" class="rbti-role-tab" data-target="admin" role="tab" aria-selected="false" id="tab-admin">
+          <i class="fas fa-user-shield"></i> Admin
         </button>
       </div>
-    </div>
 
-    <!-- Member Section -->
-<div class="form-section" id="member-section">
-  <h2 class="text-center mb-4">Login Anggota</h2>
-  <form id="member-form" action="login.php" method="POST">
-    <div class="input-group">
-      <i class="fas fa-id-card"></i>
-      <input type="text" placeholder="ID Anggota" name="nim" required>
-    </div>
-    <div class="input-group">
-      <i class="fas fa-lock"></i>
-      <input type="password" placeholder="Password" name="password" required>
-    </div>
-    <button type="submit" class="btn">
-      <i class="fas fa-sign-in-alt"></i> Login
-    </button>
-  </form>
-  <div class="options">
-    <button class="btn btn-outline" id="go-to-register">
-      <i class="fas fa-user-plus"></i> Daftar Baru
-    </button>
-    <button class="btn btn-outline" id="back-to-visitor">
-      <i class="fas fa-arrow-left"></i> Kembali
-    </button>
-  </div>
-</div>
+      <!-- Visitor Section -->
+      <section class="rbti-auth-section active" id="visitor-section" aria-labelledby="tab-visitor">
+        <form id="visitor-form" action="login-visitor.php" method="POST">
+          <div class="rbti-field">
+            <label for="visitor-name">Nama Lengkap</label>
+            <div class="rbti-input-wrap">
+              <i class="fas fa-user"></i>
+              <input type="text" id="visitor-name" name="name" placeholder="Masukkan nama lengkap" required autocomplete="name">
+            </div>
+          </div>
+          <div class="rbti-field">
+            <label for="visitor-email">Email</label>
+            <div class="rbti-input-wrap">
+              <i class="fas fa-envelope"></i>
+              <input type="email" id="visitor-email" name="email" placeholder="nama@email.com" required autocomplete="email">
+            </div>
+          </div>
+          <button type="submit" class="rbti-auth-submit">
+            <i class="fas fa-arrow-right-to-bracket"></i> Masuk sebagai Pengunjung
+          </button>
+        </form>
+      </section>
 
-
-    <!-- Registration Section -->
-<div class="form-section" id="register-section">
-  <h2 class="text-center mb-4">Pendaftaran Anggota Baru</h2>
-  <form id="register-form" action="register-process.php" method="POST">
-    <div class="input-group">
-      <i class="fas fa-user"></i>
-      <input type="text" placeholder="Nama Lengkap" name="name" required>
-    </div>
-    <div class="input-group">
-      <i class="fas fa-id-badge"></i>
-      <input type="text" placeholder="NIM" name="nim" required>
-    </div>
-    <div class="input-group">
-      <i class="fas fa-envelope"></i>
-      <input type="email" placeholder="Email" name="email" required>
-    </div>
-    <div class="input-group">
-      <i class="fas fa-lock"></i>
-      <input type="password" placeholder="Password" name="password" required>
-    </div>
-    <button type="submit" class="btn">
-      <i class="fas fa-user-plus"></i> Daftar
-    </button>
-  </form>
-  <div class="options">
-    <button class="btn btn-outline" id="back-to-member">
-      <i class="fas fa-arrow-left"></i> Kembali
-    </button>
-  </div>
-  <div class="alert alert-success" id="register-success">
-    <i class="fas fa-check-circle"></i> Pendaftaran berhasil! Silakan menunggu verifikasi admin.
-  </div>
-  <div class="alert alert-error" id="register-error">
-    <i class="fas fa-exclamation-circle"></i> Pendaftaran gagal! Silakan coba lagi.
-  </div>
-</div>
-
-
-    <!-- Admin Section -->
-    <div class="form-section" id="admin-section" action="admin-login.php" method="POST">
-      <h2 class="text-center mb-4">Admin Login</h2>
-      <form id="admin-form" action="admin-login.php" method="POST">
-        <div class="input-group">
-          <i class="fas fa-user-shield"></i>
-          <input type="text" placeholder="Username Admin" name="username" required>
+      <!-- Member Login Section -->
+      <section class="rbti-auth-section" id="member-section" aria-labelledby="tab-member">
+        <form id="member-form" action="login.php" method="POST">
+          <div class="rbti-field">
+            <label for="member-nim">ID Anggota / NIM</label>
+            <div class="rbti-input-wrap">
+              <i class="fas fa-id-card"></i>
+              <input type="text" id="member-nim" name="nim" placeholder="Masukkan NIM" required autocomplete="username">
+            </div>
+          </div>
+          <div class="rbti-field">
+            <label for="member-password">Password</label>
+            <div class="rbti-input-wrap">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="member-password" name="password" placeholder="Masukkan password" required autocomplete="current-password">
+            </div>
+          </div>
+          <button type="submit" class="rbti-auth-submit">
+            <i class="fas fa-arrow-right-to-bracket"></i> Masuk sebagai Anggota
+          </button>
+        </form>
+        <div class="rbti-auth-switch">
+          Belum terdaftar sebagai anggota?
+          <button type="button" class="rbti-auth-link-btn" id="go-to-register">Daftar Baru</button>
         </div>
-        <div class="input-group">
-          <i class="fas fa-envelope"></i>
-          <input type="email" placeholder="Email Admin" name="email" required>
+      </section>
+
+      <!-- Member Registration Section -->
+      <section class="rbti-auth-section" id="register-section" aria-label="Pendaftaran Anggota Baru">
+        <form id="register-form" action="register-process.php" method="POST">
+          <div class="rbti-field">
+            <label for="reg-name">Nama Lengkap</label>
+            <div class="rbti-input-wrap">
+              <i class="fas fa-user"></i>
+              <input type="text" id="reg-name" name="name" placeholder="Nama lengkap mahasiswa" required autocomplete="name">
+            </div>
+          </div>
+          <div class="rbti-field">
+            <label for="reg-nim">NIM</label>
+            <div class="rbti-input-wrap">
+              <i class="fas fa-id-badge"></i>
+              <input type="text" id="reg-nim" name="nim" placeholder="Nomor Induk Mahasiswa" required>
+            </div>
+          </div>
+          <div class="rbti-field">
+            <label for="reg-email">Email</label>
+            <div class="rbti-input-wrap">
+              <i class="fas fa-envelope"></i>
+              <input type="email" id="reg-email" name="email" placeholder="nama@students.undip.ac.id" required autocomplete="email">
+            </div>
+          </div>
+          <div class="rbti-field">
+            <label for="reg-password">Password</label>
+            <div class="rbti-input-wrap">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="reg-password" name="password" placeholder="Buat password" required autocomplete="new-password">
+            </div>
+          </div>
+          <button type="submit" class="rbti-auth-submit">
+            <i class="fas fa-user-plus"></i> Daftar Anggota Baru
+          </button>
+        </form>
+        <div class="rbti-auth-switch">
+          Sudah memiliki akun?
+          <button type="button" class="rbti-auth-link-btn" id="back-to-member">Kembali ke Login Anggota</button>
         </div>
-        <div class="input-group">
-          <i class="fas fa-lock"></i>
-          <input type="password" placeholder="Password" name="password" required>
-        </div>
-        <button type="submit" class="btn">
-          <i class="fas fa-sign-in-alt"></i> Login Admin
-        </button>
-      </form>
-      <div class="options">
-        <button class="btn btn-outline" id="back-to-visitor-admin">
-          <i class="fas fa-arrow-left"></i> Kembali
-        </button>
-      </div>
+      </section>
+
+      <!-- Admin Login Section -->
+      <section class="rbti-auth-section" id="admin-section" aria-labelledby="tab-admin">
+        <form id="admin-form" action="admin-login.php" method="POST">
+          <div class="rbti-field">
+            <label for="admin-username">Username Admin</label>
+            <div class="rbti-input-wrap">
+              <i class="fas fa-user-shield"></i>
+              <input type="text" id="admin-username" name="username" placeholder="Masukkan username admin" required autocomplete="username">
+            </div>
+          </div>
+          <div class="rbti-field">
+            <label for="admin-email">Email Admin</label>
+            <div class="rbti-input-wrap">
+              <i class="fas fa-envelope"></i>
+              <input type="email" id="admin-email" name="email" placeholder="admin@domain.com" required autocomplete="email">
+            </div>
+          </div>
+          <div class="rbti-field">
+            <label for="admin-password">Password</label>
+            <div class="rbti-input-wrap">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="admin-password" name="password" placeholder="Masukkan password" required autocomplete="current-password">
+            </div>
+          </div>
+          <button type="submit" class="rbti-auth-submit">
+            <i class="fas fa-shield-halved"></i> Masuk sebagai Admin
+          </button>
+        </form>
+      </section>
     </div>
 
-    <div class="loading-spinner">
-      <i class="fas fa-circle-notch"></i>
-    </div>
-  </div>
+    <p class="rbti-auth-footer">&copy; 2024 Kelompok 02 APSI · RBTI Universitas Diponegoro</p>
+  </main>
 
   <script>
-    // Get all sections
-    const sections = {
-      visitor: document.getElementById('visitor-section'),
-      member: document.getElementById('member-section'),
-      register: document.getElementById('register-section'),
-      admin: document.getElementById('admin-section')
-    };
+    (function () {
+      const sections = {
+        visitor: document.getElementById('visitor-section'),
+        member: document.getElementById('member-section'),
+        register: document.getElementById('register-section'),
+        admin: document.getElementById('admin-section')
+      };
 
-    // Get all navigation buttons
-    const buttons = {
-      goToMember: document.getElementById('go-to-member'),
-      goToAdmin: document.getElementById('go-to-admin'),
-      goToRegister: document.getElementById('go-to-register'),
-      backToVisitor: document.getElementById('back-to-visitor'),
-      backToVisitorAdmin: document.getElementById('back-to-visitor-admin'),
-      backToMember: document.getElementById('back-to-member')
-    };
+      const tabs = document.querySelectorAll('.rbti-role-tab');
 
-    // Navigation function
-    function showSection(sectionId) {
-      Object.values(sections).forEach(section => {
-        section.classList.remove('active');
+      function showSection(key) {
+        if (!sections[key]) key = 'visitor';
+        Object.keys(sections).forEach(function (k) {
+          sections[k].classList.toggle('active', k === key);
+        });
+        const activeTabKey = key === 'register' ? 'member' : key;
+        tabs.forEach(function (tab) {
+          const isMatch = tab.dataset.target === activeTabKey;
+          tab.classList.toggle('active', isMatch);
+          tab.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+        });
+      }
+
+      tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          showSection(tab.dataset.target);
+        });
       });
-      sections[sectionId].classList.add('active');
-    }
 
-    // Add click events for navigation
-    buttons.goToMember.addEventListener('click', () => showSection('member'));
-    buttons.goToAdmin.addEventListener('click', () => showSection('admin'));
-    buttons.goToRegister.addEventListener('click', () => showSection('register'));
-    buttons.backToVisitor.addEventListener('click', () => showSection('visitor'));
-    buttons.backToVisitorAdmin.addEventListener('click', () => showSection('visitor'));
-    buttons.backToMember.addEventListener('click', () => showSection('member'));
-
-    // Form submissions
-const forms = document.querySelectorAll('form');
-forms.forEach(form => {
-    form.addEventListener('submit', (e) => {
-        const submitButton = e.target.querySelector('button[type="submit"]');
-        const originalText = submitButton.innerHTML;
-
-        // Show loading state
-        submitButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...';
-        submitButton.disabled = true;
-
-        // Form will automatically submit after this
-    });
-});
-
-
-    // Add hover effects to buttons
-    document.querySelectorAll('.btn').forEach(button => {
-      button.addEventListener('mouseover', () => {
-        button.style.transform = 'translateY(-2px)';
+      document.getElementById('go-to-register').addEventListener('click', function () {
+        showSection('register');
       });
-      button.addEventListener('mouseout', () => {
-        button.style.transform = 'translateY(0)';
+
+      document.getElementById('back-to-member').addEventListener('click', function () {
+        showSection('member');
       });
-    });
+
+      // Respect hash from login/register redirects (#member-section, #register-section, #admin-section)
+      function syncFromHash() {
+        const hash = window.location.hash;
+        if (hash === '#member-section') showSection('member');
+        else if (hash === '#register-section') showSection('register');
+        else if (hash === '#admin-section') showSection('admin');
+      }
+      syncFromHash();
+      window.addEventListener('hashchange', syncFromHash);
+
+      // Loading indicator on submit
+      document.querySelectorAll('form').forEach(function (form) {
+        form.addEventListener('submit', function () {
+          const btn = form.querySelector('button[type="submit"]');
+          if (btn) {
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Memproses...';
+            btn.disabled = true;
+          }
+        });
+      });
+    })();
   </script>
 </body>
-
 </html>
