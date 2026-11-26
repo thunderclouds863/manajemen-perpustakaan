@@ -1,71 +1,44 @@
 <?php
-include('db.php');
+require_once 'auth.php';
+rbti_require_member(true);
+require_once 'db.php';
 
-// Handle AJAX requests
-$action = $_POST['action'] ?? $_GET['action'] ?? null;
+header('Content-Type: application/json');
+
+$userID = (int) $_SESSION['user_id'];
+$action = $_POST['action'] ?? $_GET['action'] ?? 'fetch';
 
 switch ($action) {
-    case 'borrow':
-        borrowBook($pdo);
-        break;
     case 'extend':
-        extendBorrow($pdo);
+        $borrowID = (int) ($_POST['borrowID'] ?? 0);
+        $stmt = $pdo->prepare("SELECT borrowID, status, extend_count FROM Borrow WHERE borrowID = :id AND userID = :uid");
+        $stmt->execute([':id' => $borrowID, ':uid' => $userID]);
+        $row = $stmt->fetch();
+
+        if (!$row || !in_array($row['status'], ['borrowed', 'extended'], true)) {
+            echo json_encode(['success' => false, 'message' => 'Peminjaman tidak memenuhi syarat untuk diperpanjang.']);
+            exit;
+        }
+        if ((int) $row['extend_count'] >= 2) {
+            echo json_encode(['success' => false, 'message' => 'Batas maksimal perpanjangan (2 kali) telah tercapai.']);
+            exit;
+        }
+
+        $upd = $pdo->prepare("UPDATE Borrow SET status = 'extend pending' WHERE borrowID = :id AND userID = :uid");
+        $upd->execute([':id' => $borrowID, ':uid' => $userID]);
+        echo json_encode(['success' => true, 'message' => 'Permintaan perpanjangan dikirim. Menunggu konfirmasi admin.']);
         break;
-    case 'return':
-        returnBook($pdo);
-        break;
+
     case 'fetch':
-        fetchBorrowData($pdo);
-        break;
     default:
-        echo json_encode(['error' => 'Invalid action']);
+        $stmt = $pdo->prepare(
+            "SELECT b.borrowID, b.bookID, bk.title AS bookTitle, b.borrowDate, b.returnDate, b.status, b.extend_count AS extensionCount
+             FROM Borrow b
+             INNER JOIN Book bk ON b.bookID = bk.bookID
+             WHERE b.userID = :uid AND b.status IN ('borrowed', 'extended', 'overdue', 'extend pending', 'return pending')
+             ORDER BY b.borrowID DESC"
+        );
+        $stmt->execute([':uid' => $userID]);
+        echo json_encode(['borrowList' => $stmt->fetchAll()]);
+        break;
 }
-
-function borrowBook($pdo) {
-    $userID = $_POST['userID'];
-    $bookID = $_POST['bookID'];
-    $borrowDate = $_POST['borrowDate'];
-
-    // Insert into Borrow table
-    $stmt = $pdo->prepare("INSERT INTO Borrow (userID, bookID, borrowDate) VALUES (:userID, :bookID, :borrowDate)");
-    $stmt->execute(['userID' => $userID, 'bookID' => $bookID, 'borrowDate' => $borrowDate]);
-
-    // Update book availableCopies
-    $stmt = $pdo->prepare("UPDATE Book SET availableCopies = availableCopies - 1 WHERE bookID = :bookID");
-    $stmt->execute(['bookID' => $bookID]);
-
-    echo json_encode(['message' => 'Book borrowed successfully']);
-}
-
-function extendBorrow($pdo) {
-    $borrowID = $_POST['borrowID'];
-    $stmt = $pdo->prepare("UPDATE ExtendBorrow SET status = 'approved' WHERE borrowID = :borrowID");
-    $stmt->execute(['borrowID' => $borrowID]);
-
-    echo json_encode(['message' => 'Borrow period extended successfully']);
-}
-
-function returnBook($pdo) {
-    $borrowID = $_POST['borrowID'];
-    $stmt = $pdo->prepare("UPDATE Borrow SET status = 'returned' WHERE borrowID = :borrowID");
-    $stmt->execute(['borrowID' => $borrowID]);
-
-    // Update book availableCopies
-    $stmt = $pdo->prepare("UPDATE Book SET availableCopies = availableCopies + 1 WHERE bookID IN (SELECT bookID FROM Borrow WHERE borrowID = :borrowID)");
-    $stmt->execute(['borrowID' => $borrowID]);
-
-    // Insert into Return table
-    $stmt = $pdo->prepare("INSERT INTO Return (borrowID, status) VALUES (:borrowID, 'returned')");
-    $stmt->execute(['borrowID' => $borrowID]);
-
-    echo json_encode(['message' => 'Book returned successfully']);
-}
-
-function fetchBorrowData($pdo) {
-    $stmt = $pdo->prepare("SELECT * FROM Borrow INNER JOIN Book ON Borrow.bookID = Book.bookID WHERE Borrow.status = 'pending'");
-    $stmt->execute();
-    $borrowList = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    echo json_encode(['borrowList' => $borrowList]);
-}
-?>

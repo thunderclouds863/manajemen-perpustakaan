@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once 'auth.php';
 $flashError = $_SESSION['error'] ?? null;
 $flashSuccess = $_SESSION['success'] ?? null;
 unset($_SESSION['error'], $_SESSION['success']);
@@ -85,10 +85,14 @@ unset($_SESSION['error'], $_SESSION['success']);
             </div>
           </div>
           <div class="rbti-field">
-            <label for="member-password">Password</label>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <label for="member-password" style="margin-bottom:0;">Password</label>
+              <a href="forgot-password.php" style="font-size:0.78rem; font-weight:600; text-decoration:none;">Lupa password?</a>
+            </div>
             <div class="rbti-input-wrap">
               <i class="fas fa-lock"></i>
               <input type="password" id="member-password" name="password" placeholder="Masukkan password" required autocomplete="current-password">
+              <button type="button" class="rbti-pw-toggle" data-target="member-password" aria-label="Tampilkan password"><i class="fas fa-eye"></i></button>
             </div>
           </div>
           <button type="submit" class="rbti-auth-submit">
@@ -129,7 +133,8 @@ unset($_SESSION['error'], $_SESSION['success']);
             <label for="reg-password">Password</label>
             <div class="rbti-input-wrap">
               <i class="fas fa-lock"></i>
-              <input type="password" id="reg-password" name="password" placeholder="Buat password" required autocomplete="new-password">
+              <input type="password" id="reg-password" name="password" placeholder="Minimal 6 karakter" minlength="6" required autocomplete="new-password">
+              <button type="button" class="rbti-pw-toggle" data-target="reg-password" aria-label="Tampilkan password"><i class="fas fa-eye"></i></button>
             </div>
           </div>
           <button type="submit" class="rbti-auth-submit">
@@ -153,17 +158,11 @@ unset($_SESSION['error'], $_SESSION['success']);
             </div>
           </div>
           <div class="rbti-field">
-            <label for="admin-email">Email Admin</label>
-            <div class="rbti-input-wrap">
-              <i class="fas fa-envelope"></i>
-              <input type="email" id="admin-email" name="email" placeholder="admin@domain.com" required autocomplete="email">
-            </div>
-          </div>
-          <div class="rbti-field">
             <label for="admin-password">Password</label>
             <div class="rbti-input-wrap">
               <i class="fas fa-lock"></i>
               <input type="password" id="admin-password" name="password" placeholder="Masukkan password" required autocomplete="current-password">
+              <button type="button" class="rbti-pw-toggle" data-target="admin-password" aria-label="Tampilkan password"><i class="fas fa-eye"></i></button>
             </div>
           </div>
           <button type="submit" class="rbti-auth-submit">
@@ -214,7 +213,17 @@ unset($_SESSION['error'], $_SESSION['success']);
         showSection('member');
       });
 
-      // Respect hash from login/register redirects (#member-section, #register-section, #admin-section)
+      // Password visibility toggles
+      document.querySelectorAll('.rbti-pw-toggle').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          const input = document.getElementById(btn.dataset.target);
+          if (!input) return;
+          const isPw = input.type === 'password';
+          input.type = isPw ? 'text' : 'password';
+          btn.innerHTML = isPw ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
+        });
+      });
+
       function syncFromHash() {
         const hash = window.location.hash;
         if (hash === '#member-section') showSection('member');
@@ -224,7 +233,6 @@ unset($_SESSION['error'], $_SESSION['success']);
       syncFromHash();
       window.addEventListener('hashchange', syncFromHash);
 
-      // Loading indicator on submit
       document.querySelectorAll('form').forEach(function (form) {
         form.addEventListener('submit', function () {
           const btn = form.querySelector('button[type="submit"]');

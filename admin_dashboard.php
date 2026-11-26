@@ -1,5 +1,25 @@
 <?php
-session_start();
+require_once 'auth.php';
+rbti_require_admin();
+require_once 'db_connect.php';
+
+$totalBooks = 0;
+$pendingUsers = 0;
+$pendingBorrows = 0;
+$activeBorrows = 0;
+
+if ($res = $conn->query("SELECT COUNT(*) AS cnt FROM Book")) {
+    $totalBooks = (int) ($res->fetch_assoc()['cnt'] ?? 0);
+}
+if ($res = $conn->query("SELECT COUNT(*) AS cnt FROM users WHERE status = 'pending'")) {
+    $pendingUsers = (int) ($res->fetch_assoc()['cnt'] ?? 0);
+}
+if ($res = $conn->query("SELECT COUNT(*) AS cnt FROM Borrow WHERE status IN ('borrow pending', 'extend pending', 'return pending')")) {
+    $pendingBorrows = (int) ($res->fetch_assoc()['cnt'] ?? 0);
+}
+if ($res = $conn->query("SELECT COUNT(*) AS cnt FROM Borrow WHERE status IN ('borrowed', 'extended', 'overdue')")) {
+    $activeBorrows = (int) ($res->fetch_assoc()['cnt'] ?? 0);
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -68,32 +88,32 @@ session_start();
                 <i class="fas fa-book"></i> Kelola Buku
               </a>
               <a href="peminjaman_buku.php" class="rbti-btn-ghost-light">
-                <i class="fas fa-clipboard-check"></i> Antrean Peminjaman
+                <i class="fas fa-clipboard-check"></i> Antrean Peminjaman (<?= $pendingBorrows ?>)
               </a>
             </div>
           </div>
           <div class="col-lg-5">
             <div class="rbti-hero-visual">
               <div class="rbti-hero-visual-header">
-                <span class="rbti-hero-visual-label">Modul Operasional</span>
-                <i class="fas fa-sliders" style="color: var(--rbti-gold-400);"></i>
+                <span class="rbti-hero-visual-label">Ringkasan Operasional</span>
+                <i class="fas fa-chart-simple" style="color: var(--rbti-gold-400);"></i>
               </div>
               <div class="rbti-hero-metrics">
                 <div class="rbti-hero-metric">
-                  <div class="rbti-hero-metric-val">Inventaris</div>
-                  <div class="rbti-hero-metric-key">Tambah, ubah &amp; impor CSV</div>
+                  <div class="rbti-hero-metric-val"><?= $totalBooks ?></div>
+                  <div class="rbti-hero-metric-key">Total Judul Buku</div>
                 </div>
                 <div class="rbti-hero-metric">
-                  <div class="rbti-hero-metric-val">Anggota</div>
-                  <div class="rbti-hero-metric-key">Verifikasi akun pending</div>
+                  <div class="rbti-hero-metric-val"><?= $pendingUsers ?></div>
+                  <div class="rbti-hero-metric-key">Anggota Pending</div>
                 </div>
                 <div class="rbti-hero-metric">
-                  <div class="rbti-hero-metric-val">Sirkulasi</div>
-                  <div class="rbti-hero-metric-key">Persetujuan pinjam &amp; kembali</div>
+                  <div class="rbti-hero-metric-val"><?= $pendingBorrows ?></div>
+                  <div class="rbti-hero-metric-key">Permintaan Sirkulasi</div>
                 </div>
                 <div class="rbti-hero-metric">
-                  <div class="rbti-hero-metric-val">Katalog</div>
-                  <div class="rbti-hero-metric-key">Referensi &amp; karya ilmiah</div>
+                  <div class="rbti-hero-metric-val"><?= $activeBorrows ?></div>
+                  <div class="rbti-hero-metric-key">Peminjaman Aktif</div>
                 </div>
               </div>
             </div>
@@ -115,7 +135,7 @@ session_start();
           <div class="col-md-4">
             <a href="manajemen_buku.php" class="rbti-service-card">
               <div class="rbti-service-icon">
-                <i class="fas fa-books fa-book"></i>
+                <i class="fas fa-book"></i>
               </div>
               <h3>Manajemen Buku</h3>
               <p>Kelola daftar buku, jumlah salinan tersedia, kategori, dan unggah data CSV.</p>
@@ -140,7 +160,7 @@ session_start();
                 <i class="fas fa-bookmark"></i>
               </div>
               <h3>Peminjaman &amp; Pengembalian</h3>
-              <p>Konfirmasi permintaan peminjaman, perpanjangan masa pinjam, dan pengembalian.</p>
+              <p>Konfirmasi atau tolak permintaan peminjaman, perpanjangan, dan pengembalian.</p>
               <span class="rbti-service-cta">Kelola Sirkulasi <i class="fas fa-arrow-right"></i></span>
             </a>
           </div>

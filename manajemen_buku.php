@@ -1,43 +1,22 @@
 <?php
-try {
-    $conn = new mysqli('localhost', 'root', '', 'rbti');
+require_once 'auth.php';
+rbti_require_admin();
+require_once 'db_connect.php';
 
-    if ($conn->connect_error) {
-        throw new Exception("Connection failed: " . $conn->connect_error);
-    }
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bookID'], $_POST['availableCopies'])) {
+    header('Content-Type: application/json');
+    $bookID = (int) $_POST['bookID'];
+    $availableCopies = max(0, (int) $_POST['availableCopies']);
+    $newStatus = ($availableCopies === 0) ? 'unavailable' : 'available';
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $bookID = $_POST['bookID'];
-        $availableCopies = $_POST['availableCopies'];
+    $stmt = $conn->prepare("UPDATE Book SET availableCopies = ?, status = ? WHERE bookID = ?");
+    $stmt->bind_param('isi', $availableCopies, $newStatus, $bookID);
+    $ok = $stmt->execute();
+    $stmt->close();
+    $conn->close();
 
-        $selectQuery = "SELECT availableCopies FROM Book WHERE bookID = ?";
-        $stmt = $conn->prepare($selectQuery);
-        $stmt->bind_param("i", $bookID);
-        $stmt->execute();
-        $stmt->bind_result($currentAvailableCopies);
-        $stmt->fetch();
-        $stmt->close();
-
-        $newStatus = ($availableCopies == 0) ? 'unavailable' : 'available';
-
-        $updateQuery = "UPDATE Book SET availableCopies = ?, status = ? WHERE bookID = ?";
-        $stmt = $conn->prepare($updateQuery);
-        $stmt->bind_param("isi", $availableCopies, $newStatus, $bookID);
-        $stmt->execute();
-        $stmt->close();
-
-        echo json_encode(['success' => true, 'message' => 'Book status updated successfully']);
-        exit;
-    }
-} catch (Exception $e) {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
-        exit;
-    }
-} finally {
-    if (isset($conn)) {
-        $conn->close();
-    }
+    echo json_encode(['success' => $ok, 'message' => $ok ? 'Status buku diperbarui.' : 'Gagal memperbarui status buku.']);
+    exit;
 }
 ?>
 <!DOCTYPE html>
@@ -327,8 +306,8 @@ try {
             success: function () {
               table.ajax.reload();
             },
-            error: function () {
-              alert('Gagal menghapus buku.');
+            error: function (xhr) {
+              alert(xhr.responseText || 'Gagal menghapus buku.');
             }
           });
         }
