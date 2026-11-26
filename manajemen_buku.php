@@ -1,486 +1,416 @@
 <?php
-
-
 try {
-  $conn = new mysqli('localhost', 'root', '', 'rbti');
+    $conn = new mysqli('localhost', 'root', '', 'rbti');
 
-  if ($conn->connect_error) {
-    throw new Exception("Connection failed: " . $conn->connect_error);
-  }
+    if ($conn->connect_error) {
+        throw new Exception("Connection failed: " . $conn->connect_error);
+    }
 
-  if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $bookID = $_POST['bookID'];
-    $availableCopies = $_POST['availableCopies'];
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $bookID = $_POST['bookID'];
+        $availableCopies = $_POST['availableCopies'];
 
-    // 1. Ambil nilai availableCopies saat ini dari database
-    $selectQuery = "SELECT availableCopies FROM Book WHERE bookID = ?";
-    $stmt = $conn->prepare($selectQuery);
-    $stmt->bind_param("i", $bookID);
-    $stmt->execute();
-    $stmt->bind_result($currentAvailableCopies);
-    $stmt->fetch();
-    $stmt->close();
+        $selectQuery = "SELECT availableCopies FROM Book WHERE bookID = ?";
+        $stmt = $conn->prepare($selectQuery);
+        $stmt->bind_param("i", $bookID);
+        $stmt->execute();
+        $stmt->bind_result($currentAvailableCopies);
+        $stmt->fetch();
+        $stmt->close();
 
-    // 2. Tentukan status berdasarkan availableCopies setelah update
-    $newStatus = ($availableCopies == 0) ? 'unavailable' : 'available';
+        $newStatus = ($availableCopies == 0) ? 'unavailable' : 'available';
 
-    // 3. Update availableCopies dan status berdasarkan data yang diperoleh
-    $updateQuery = "UPDATE Book SET availableCopies = ?, status = ? WHERE bookID = ?";
-    $stmt = $conn->prepare($updateQuery);
-    $stmt->bind_param("isi", $availableCopies, $newStatus, $bookID);
-    $stmt->execute();
-    $stmt->close();
+        $updateQuery = "UPDATE Book SET availableCopies = ?, status = ? WHERE bookID = ?";
+        $stmt = $conn->prepare($updateQuery);
+        $stmt->bind_param("isi", $availableCopies, $newStatus, $bookID);
+        $stmt->execute();
+        $stmt->close();
 
-    echo json_encode(['success' => true, 'message' => 'Book status updated successfully']);
-  }
+        echo json_encode(['success' => true, 'message' => 'Book status updated successfully']);
+        exit;
+    }
 } catch (Exception $e) {
-  echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        exit;
+    }
 } finally {
-  if (isset($conn)) {
-    $conn->close();
-  }
+    if (isset($conn)) {
+        $conn->close();
+    }
 }
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Manage Books</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
-    <style>
-    body {
-        font-family: 'Roboto', Arial, sans-serif;
-        background-color: #f8f9fa;
-        color: #495057;
-        padding-top: 56px; /* Sesuaikan dengan tinggi navbar */
-    }
-
-    .navbar {
-        position: fixed; /* Navbar tetap di atas */
-        top: 0;
-        left: 0;
-        width: 100%;
-        z-index: 1030;
-        background-color: #2c3e50;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    .navbar-brand {
-        font-weight: bold;
-        color: #ffffff !important;
-    }
-
-    .nav-link {
-        color: #f8f9fa !important;
-    }
-
-    .table thead {
-        background-color: #e9ecef;
-    }
-
-    .btn {
-        border-radius: 30px;
-    }
-
-    .btn-primary {
-        background-color: #6f42c1;
-        border-color: #6f42c1;
-    }
-
-    .btn-success {
-        background-color: #20c997;
-        border-color: #20c997;
-    }
-
-    .btn-danger {
-        background-color: #e74c3c;
-        border-color: #e74c3c;
-    }
-
-    .form-control:focus,
-    .form-select:focus {
-        box-shadow: none;
-        border-color: #6f42c1;
-    }
-
-    .modal-content {
-        border-radius: 15px;
-    }
-
-    .search-bar {
-        margin-bottom: 20px; /* Tambahkan jarak antara search bar dan tabel */
-    }
-
-    /* Tabel dengan garis horizontal */
-    .table-bordered {
-        border-collapse: collapse;
-        border: 1px solid #dee2e6;
-    }
-
-    .table-bordered th,
-    .table-bordered td {
-        border: 1px solid #dee2e6;
-    }
-
-    /* Warna selang-seling untuk baris tabel */
-    .table-striped tbody tr:nth-of-type(odd) {
-        background-color: #ffffff; /* Warna putih */
-
-    }
-
-    .table-striped tbody tr:nth-of-type(even) {
-        background-color: #f9f9f10; /* Warna terang */
-
-    }
-
-    .table-hover tbody tr:hover {
-        background-color: #f1f1f1; /* Warna ketika di-hover */
-    }
-
-    .table th,
-    .table td {
-        vertical-align: middle; /* Biar teks ada di tengah */
-    }
-
-    .table td:nth-child(5) {
-        width: 15%; /* Available Copies */
-    }
-    .table td:nth-child(4) {
-        width: 15%; /* Available Copies */
-    }
-
-    .table td:nth-child(7) {
-        width: 20%; /* Actions */
-    }
-
-    .container h3 {
-        margin-bottom: 35px; /* Menambah jarak antara judul dan tombol */
-    }
-    .actions-bar {
-    margin-bottom: 10px; /* Jarak antara tombol dan tabel */
-    display: flex;
-    justify-content: space-between; /* Untuk meratakan tombol dan search bar */
-    align-items: center;
-}
-
-.search-bar input {
-    max-width: 300px; /* Atur lebar input search */
-}
-
-
-    .btn-edit,
-    .btn-delete {
-        margin-right: 10px; /* Memberi jarak antar tombol di kolom Actions */
-    }
-</style>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manajemen Buku — Admin RBTI UNDIP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+  <link href="assets/css/rbti.css" rel="stylesheet">
 </head>
-
-<body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="admin_dashboard.php"><i class="fas fa-book"></i> Library Admin</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="admin_dashboard.php">
-                            <i class="fas fa-home"></i> Home
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="manajemen-user.php">
-                            <i class="fas fa-users"></i> Users
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="manajemen_buku.php">
-                            <i class="fas fa-book"></i> Books
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="peminjaman_buku.php">
-                            <i class="fas fa-bookmark"></i> Borrowing
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="logout.php">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </a>
-                    </li>
-                </ul>
-            </div>
+<body class="rbti-has-nav">
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top rbti-navbar">
+      <div class="container">
+        <a class="rbti-brand" href="admin_dashboard.php">
+          <img src="undip.png" alt="Logo UNDIP" class="rbti-brand-logo">
+          <span class="rbti-brand-text">
+            <span class="rbti-brand-title">RBTI UNDIP</span>
+            <span class="rbti-brand-sub">Admin Panel</span>
+          </span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-home"></i> Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="manajemen-user.php"><i class="fas fa-users"></i> Users</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="manajemen_buku.php"><i class="fas fa-book"></i> Books</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="peminjaman_buku.php"><i class="fas fa-bookmark"></i> Borrowing</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link rbti-nav-logout" href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </li>
+          </ul>
         </div>
+      </div>
     </nav>
+  </header>
 
-    <!-- Content -->
-    <div class="container mt-4">
-        <h3><i class="fas fa-book"></i> Manage Books</h3>
-        <div class="actions-bar">
-    <div>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBookModal">
-            <i class="fas fa-plus"></i> Add Book
-        </button>
-        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#uploadSpreadsheetModal">
-            <i class="fas fa-file-upload"></i> Upload Spreadsheet
-        </button>
-    </div>
-</div>
-
-<table class="table table-bordered table-striped table-hover" id="booksTable">
-    <thead>
-        <tr>
-            <th>Title</th>
-            <th>Author</th>
-            <th>Genre</th>
-            <th>Total Copies</th>
-            <th>Available Copies</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        <!-- Dynamic Content -->
-    </tbody>
-</table>
-
-    </div>
-
-        <!-- Add Book Modal -->
-        <div class="modal fade" id="addBookModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Book</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="addBookForm">
-                        <div class="mb-3">
-                            <label>Title</label>
-                            <input type="text" class="form-control" name="title" required>
-                        </div>
-                        <div class="mb-3">
-                            <label>Author</label>
-                            <input type="text" class="form-control" name="author" required>
-                        </div>
-                        <div class="mb-3">
-                            <label>Genre</label>
-                            <select class="form-select" name="genre" required>
-                                <option>Sirkulasi</option>
-                                <option>Referensi</option>
-                                <option>Tugas Akhir</option>
-                                <option>KP</option>
-                                <option>Thesis</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label>Total Copies</label>
-                            <input type="number" class="form-control" name="totalCopies" required>
-                        </div>
-                        <div class="mb-3">
-                            <label>Available Copies</label>
-                            <input type="number" class="form-control" name="availableCopies" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Save</button>
-                    </form>
-                </div>
-            </div>
+  <main class="rbti-main">
+    <section class="rbti-masthead">
+      <div class="container rbti-masthead-inner">
+        <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3">
+          <div>
+            <div class="rbti-eyebrow"><i class="fas fa-book"></i> Inventaris Perpustakaan</div>
+            <h1>Manajemen Buku</h1>
+            <p>Tambah, perbarui, hapus, atau impor data koleksi buku Ruang Baca Teknik Industri.</p>
+          </div>
+          <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="rbti-btn-gold" data-bs-toggle="modal" data-bs-target="#addBookModal">
+              <i class="fas fa-plus"></i> Tambah Buku
+            </button>
+            <button type="button" class="rbti-btn-ghost-light" data-bs-toggle="modal" data-bs-target="#uploadSpreadsheetModal">
+              <i class="fas fa-file-upload"></i> Upload CSV
+            </button>
+          </div>
         </div>
-    </div>
+      </div>
+    </section>
 
-    <!-- Upload Spreadsheet Modal -->
-    <div class="modal fade" id="uploadSpreadsheetModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Upload Spreadsheet</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="uploadSpreadsheetForm" enctype="multipart/form-data">
-                        <div class="mb-3">
-                            <label>Select File (CSV)</label>
-                            <input type="file" class="form-control" name="spreadsheet" required>
-                        </div>
-                        <button type="submit" class="btn btn-success">Upload</button>
-                    </form>
-                </div>
+    <section class="rbti-section">
+      <div class="container">
+        <div class="rbti-panel">
+          <div class="rbti-panel-header">
+            <h2 class="rbti-panel-title"><i class="fas fa-table"></i> Daftar Koleksi Buku</h2>
+          </div>
+          <div class="rbti-panel-body">
+            <div class="rbti-table-wrap">
+              <table class="table rbti-table" id="booksTable" style="width: 100%;">
+                <thead>
+                  <tr>
+                    <th>Judul</th>
+                    <th>Penulis</th>
+                    <th>Genre</th>
+                    <th>Total</th>
+                    <th>Tersedia</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
             </div>
+          </div>
         </div>
-    </div>
+      </div>
+    </section>
+  </main>
 
-    <!-- Edit Book Modal -->
-    <div class="modal fade" id="editBookModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit Book</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editBookForm">
-                        <input type="hidden" name="id">
-                        <div class="mb-3">
-                            <label>Title</label>
-                            <input type="text" class="form-control" name="title" required>
-                        </div>
-                        <div class="mb-3">
-                            <label>Author</label>
-                            <input type="text" class="form-control" name="author" required>
-                        </div>
-                        <div class="mb-3">
-                            <label>Genre</label>
-                            <select class="form-select" name="genre" required>
-                                <option>Sirkulasi</option>
-                                <option>Referensi</option>
-                                <option>Tugas Akhir</option>
-                                <option>KP</option>
-                                <option>Thesis</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label>Total Copies</label>
-                            <input type="number" class="form-control" name="totalCopies" required>
-                        </div>
-                        <div class="mb-3">
-                            <label>Available Copies</label>
-                            <input type="number" class="form-control" name="availableCopies" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
-                    </form>
-                </div>
+  <!-- Add Book Modal -->
+  <div class="modal fade" id="addBookModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-plus me-2"></i>Tambah Buku Baru</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="addBookForm">
+            <div class="mb-3">
+              <label class="form-label">Judul Buku</label>
+              <input type="text" class="form-control" name="title" required>
             </div>
+            <div class="mb-3">
+              <label class="form-label">Penulis</label>
+              <input type="text" class="form-control" name="author" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Genre / Kategori</label>
+              <select class="form-select" name="genre" required>
+                <option>Sirkulasi</option>
+                <option>Referensi</option>
+                <option>Tugas Akhir</option>
+                <option>KP</option>
+                <option>Thesis</option>
+              </select>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-6">
+                <label class="form-label">Total Salinan</label>
+                <input type="number" class="form-control" name="totalCopies" min="0" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label">Salinan Tersedia</label>
+                <input type="number" class="form-control" name="availableCopies" min="0" required>
+              </div>
+            </div>
+            <button type="submit" class="rbti-btn-primary w-100">Simpan Buku</button>
+          </form>
         </div>
+      </div>
     </div>
+  </div>
 
-    <!-- JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script> <!-- DataTables JS -->
-    <script>
-  $(document).ready(function () {
-    // Inisialisasi DataTable
-    const table = $('#booksTable').DataTable({
+  <!-- Upload Spreadsheet Modal -->
+  <div class="modal fade" id="uploadSpreadsheetModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-file-csv me-2"></i>Upload Spreadsheet (CSV)</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="uploadSpreadsheetForm" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label class="form-label">Pilih File (CSV)</label>
+              <input type="file" class="form-control" name="spreadsheet" accept=".csv" required>
+            </div>
+            <button type="submit" class="rbti-btn-primary w-100">Upload Data</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Book Modal -->
+  <div class="modal fade" id="editBookModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-pen me-2"></i>Edit Buku</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editBookForm">
+            <input type="hidden" name="id">
+            <div class="mb-3">
+              <label class="form-label">Judul Buku</label>
+              <input type="text" class="form-control" name="title" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Penulis</label>
+              <input type="text" class="form-control" name="author" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Genre / Kategori</label>
+              <select class="form-select" name="genre" required>
+                <option>Sirkulasi</option>
+                <option>Referensi</option>
+                <option>Tugas Akhir</option>
+                <option>KP</option>
+                <option>Thesis</option>
+              </select>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-6">
+                <label class="form-label">Total Salinan</label>
+                <input type="number" class="form-control" name="totalCopies" min="0" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label">Salinan Tersedia</label>
+                <input type="number" class="form-control" name="availableCopies" min="0" required>
+              </div>
+            </div>
+            <button type="submit" class="rbti-btn-primary w-100">Simpan Perubahan</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="rbti-footer">
+    <div class="container rbti-footer-inner">
+      <span><strong>Ruang Baca Teknik Industri</strong> · Universitas Diponegoro</span>
+      <span>&copy; Kelompok 02 APSI 2024 - RBTI UNDIP. All Rights Reserved.</span>
+    </div>
+  </footer>
+
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+  <script>
+    $(document).ready(function () {
+      const table = $('#booksTable').DataTable({
         ajax: {
-            url: 'get_books.php',
-            dataSrc: '',
+          url: 'get_books.php',
+          dataSrc: ''
         },
         columns: [
-            { data: 'title' },
-            { data: 'author' },
-            { data: 'genre' },
-            { data: 'totalCopies' },
-            { data: 'availableCopies' },
-            { data: 'status' },
-            {
-                data: null,
-                render: function (data) {
-                    return `
-                        <button class="btn btn-primary btn-sm btn-edit" data-id="${data.bookID}">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="btn btn-danger btn-sm btn-delete" data-id="${data.bookID}">
-                            <i class="fas fa-trash-alt"></i> Delete
-                        </button>
-                    `;
-                }
+          {
+            data: 'title',
+            render: function (data) {
+              return '<strong style="color: var(--rbti-ink-900);">' + $('<div>').text(data).html() + '</strong>';
             }
-        ]
-    });
-
-    // Event Delete
-    $('#booksTable tbody').on('click', '.btn-delete', function () {
-        const id = $(this).data('id');
-        if (confirm('Are you sure you want to delete this book?')) {
-            $.ajax({
-                url: 'delete_book.php',
-                method: 'POST',
-                data: { id },
-                success: function () {
-                    table.ajax.reload();
-                },
-                error: function () {
-                    alert('Failed to delete book.');
-                }
-            });
+          },
+          { data: 'author' },
+          { data: 'genre' },
+          { data: 'totalCopies' },
+          { data: 'availableCopies' },
+          {
+            data: 'status',
+            render: function (data) {
+              const isAvail = String(data).toLowerCase() === 'available';
+              return isAvail
+                ? '<span class="rbti-badge rbti-badge--success">Available</span>'
+                : '<span class="rbti-badge rbti-badge--danger">Unavailable</span>';
+            }
+          },
+          {
+            data: null,
+            orderable: false,
+            render: function (data) {
+              return `
+                <div class="rbti-action-group">
+                  <button class="btn btn-outline-primary rbti-btn-sm btn-edit" data-id="${data.bookID}">
+                    <i class="fas fa-edit"></i> Edit
+                  </button>
+                  <button class="btn btn-outline-danger rbti-btn-sm btn-delete" data-id="${data.bookID}">
+                    <i class="fas fa-trash-alt"></i> Delete
+                  </button>
+                </div>
+              `;
+            }
+          }
+        ],
+        language: {
+          search: "Cari buku:",
+          lengthMenu: "Tampilkan _MENU_ entri",
+          info: "Menampilkan _START_ hingga _END_ dari _TOTAL_ buku",
+          paginate: { previous: "Sebelumnya", next: "Berikutnya" }
         }
-    });
+      });
 
-    // Event Edit
-    $('#booksTable tbody').on('click', '.btn-edit', function () {
+      $('#booksTable tbody').on('click', '.btn-delete', function () {
         const id = $(this).data('id');
-        // Logika untuk membuka modal edit dengan data yang relevan
+        if (confirm('Apakah Anda yakin ingin menghapus buku ini?')) {
+          $.ajax({
+            url: 'delete_book.php',
+            method: 'POST',
+            data: { id },
+            success: function () {
+              table.ajax.reload();
+            },
+            error: function () {
+              alert('Gagal menghapus buku.');
+            }
+          });
+        }
+      });
+
+      $('#booksTable tbody').on('click', '.btn-edit', function () {
+        const rowData = table.row($(this).closest('tr')).data();
+        if (!rowData) return;
+        const form = $('#editBookForm');
+        form.find('[name="id"]').val(rowData.bookID);
+        form.find('[name="title"]').val(rowData.title);
+        form.find('[name="author"]').val(rowData.author);
+        form.find('[name="genre"]').val(rowData.genre);
+        form.find('[name="totalCopies"]').val(rowData.totalCopies);
+        form.find('[name="availableCopies"]').val(rowData.availableCopies);
+        new bootstrap.Modal(document.getElementById('editBookModal')).show();
+      });
+
+      $('#editBookForm').submit(function (e) {
+        e.preventDefault();
+        const formData = $(this).serialize();
+        $.ajax({
+          url: 'edit_book.php',
+          method: 'POST',
+          data: formData,
+          success: function () {
+            $('#editBookModal').modal('hide');
+            table.ajax.reload();
+          },
+          error: function () {
+            alert('Gagal menyimpan perubahan buku.');
+          }
+        });
+      });
+
+      $('#addBookForm').submit(function (e) {
+        e.preventDefault();
+        const formData = $(this).serialize();
+        $.ajax({
+          url: 'add_books.php',
+          method: 'POST',
+          data: formData,
+          success: function (response) {
+            if (response === 'success') {
+              alert('Buku berhasil ditambahkan!');
+              $('#addBookModal').modal('hide');
+              table.ajax.reload();
+              $('#addBookForm')[0].reset();
+            } else {
+              alert('Error adding book: ' + response);
+            }
+          },
+          error: function () {
+            alert('Error adding book.');
+          }
+        });
+      });
+
+      $('#uploadSpreadsheetForm').submit(function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        $.ajax({
+          url: 'upload_spreadsheet.php',
+          method: 'POST',
+          data: formData,
+          contentType: false,
+          processData: false,
+          success: function (response) {
+            if (response === 'success') {
+              alert('Spreadsheet berhasil diunggah!');
+              $('#uploadSpreadsheetModal').modal('hide');
+              table.ajax.reload();
+            } else {
+              alert('Error uploading spreadsheet: ' + response);
+            }
+          },
+          error: function () {
+            alert('Error uploading spreadsheet.');
+          }
+        });
+      });
     });
-});
-$('#searchBar').on('input', function () {
-    const searchQuery = $(this).val().trim(); // Ambil nilai input
-    fetchBooks(searchQuery); // Panggil fetchBooks dengan query pencarian
-});
-
-            // Add Book
-            $('#addBookForm').submit(function (e) {
-                e.preventDefault();
-                const formData = $(this).serialize();
-                $.ajax({
-                    url: 'add_books.php',
-                    method: 'POST',
-                    data: formData,
-                    success: function (response) {
-                        if (response === 'success') {
-                            alert('Book added successfully!');
-                            $('#addBookModal').modal('hide');
-                            fetchBooks();
-                            location.reload();
-                        } else {
-                            alert('Error adding book: ' + response);
-                        }
-                    },
-                    error: function () {
-                        alert('Error adding book.');
-                    }
-                });
-            });
-
-            // Upload Spreadsheet
-            $('#uploadSpreadsheetForm').submit(function (e) {
-                e.preventDefault();
-                const formData = new FormData(this);
-                $.ajax({
-                    url: 'upload_spreadsheet.php',
-                    method: 'POST',
-                    data: formData,
-                    contentType: false,
-                    processData: false,
-                    success: function (response) {
-                        if (response === 'success') {
-                            alert('Spreadsheet uploaded successfully!');
-                            $('#uploadSpreadsheetModal').modal('hide');
-                            fetchBooks();
-                        } else {
-                            alert('Error uploading spreadsheet: ' + response);
-                        }
-                    },
-                    error: function () {
-                        alert('Error uploading spreadsheet.');
-                    }
-                });
-            });
-
-
-    </script>
+  </script>
 </body>
-
 </html>

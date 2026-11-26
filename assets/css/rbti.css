@@ -1,0 +1,1363 @@
+/* ==========================================================================
+   Ruang Baca Teknik Industri (RBTI) — Universitas Diponegoro
+   Unified Design System & Responsive Stylesheet
+   ========================================================================== */
+
+:root {
+  /* Core Palette — UNDIP Academic Navy & Warm Brass */
+  --rbti-navy-950: #09172b;
+  --rbti-navy-900: #0f2544;
+  --rbti-navy-800: #173660;
+  --rbti-navy-700: #1f477c;
+  --rbti-navy-100: #e8eff8;
+  --rbti-navy-50: #f3f7fc;
+
+  --rbti-gold-600: #a67418;
+  --rbti-gold-500: #c8922a;
+  --rbti-gold-400: #deb04f;
+  --rbti-gold-100: #fbf2de;
+  --rbti-gold-50: #fefaf0;
+
+  /* Archival Paper Surfaces */
+  --rbti-bg: #f5f3ee;
+  --rbti-surface: #ffffff;
+  --rbti-surface-subtle: #faf9f6;
+  --rbti-border: #e5e0d6;
+  --rbti-border-strong: #d2cabd;
+
+  /* Typography Ink */
+  --rbti-ink-900: #141c27;
+  --rbti-ink-700: #334155;
+  --rbti-ink-500: #5c6b7f;
+  --rbti-ink-400: #8794a6;
+
+  /* Semantic Status */
+  --rbti-success: #157347;
+  --rbti-success-bg: #e7f6ee;
+  --rbti-warning: #9a6700;
+  --rbti-warning-bg: #fef5dc;
+  --rbti-danger: #b42318;
+  --rbti-danger-bg: #fdecec;
+  --rbti-info: #1d4ed8;
+  --rbti-info-bg: #eaf1ff;
+
+  /* Typography */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+
+  /* Radii & Elevation */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --shadow-xs: 0 1px 2px rgba(15, 37, 68, 0.05);
+  --shadow-sm: 0 4px 12px rgba(15, 37, 68, 0.06), 0 1px 3px rgba(15, 37, 68, 0.04);
+  --shadow-md: 0 12px 28px rgba(15, 37, 68, 0.1), 0 2px 6px rgba(15, 37, 68, 0.05);
+  --shadow-lg: 0 24px 48px rgba(9, 23, 43, 0.22);
+
+  --nav-height: 68px;
+}
+
+/* Base Reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--rbti-bg);
+  color: var(--rbti-ink-900);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+body.rbti-has-nav {
+  padding-top: var(--nav-height);
+}
+
+main.rbti-main {
+  flex: 1 0 auto;
+}
+
+a {
+  color: var(--rbti-navy-700);
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--rbti-navy-900);
+}
+
+/* ==========================================================================
+   Navigation Bar
+   ========================================================================== */
+.rbti-navbar {
+  height: var(--nav-height);
+  background: rgba(15, 37, 68, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(9, 23, 43, 0.14);
+  padding: 0;
+  z-index: 1030;
+}
+
+.rbti-navbar .container {
+  height: 100%;
+}
+
+.rbti-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: #ffffff !important;
+  padding: 4px 0;
+}
+
+.rbti-brand-logo {
+  height: 36px;
+  width: auto;
+  max-width: 150px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  padding: 4px 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  flex-shrink: 0;
+}
+
+.rbti-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.rbti-brand-title {
+  font-weight: 700;
+  font-size: 0.98rem;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.rbti-brand-sub {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--rbti-gold-400);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rbti-navbar .navbar-nav {
+  gap: 4px;
+}
+
+.rbti-navbar .nav-link {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 0.88rem;
+  font-weight: 500;
+  padding: 8px 14px !important;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.rbti-navbar .nav-link i {
+  font-size: 0.84rem;
+  opacity: 0.82;
+}
+
+.rbti-navbar .nav-link:hover {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.rbti-navbar .nav-link.active {
+  color: #ffffff !important;
+  background-color: rgba(200, 146, 42, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(222, 176, 79, 0.45);
+}
+
+.rbti-navbar .nav-link.active i {
+  color: var(--rbti-gold-400);
+  opacity: 1;
+}
+
+.rbti-navbar .nav-link.rbti-nav-logout {
+  color: #ffd0cc !important;
+}
+
+.rbti-navbar .nav-link.rbti-nav-logout:hover {
+  background-color: rgba(180, 35, 24, 0.25);
+  color: #ffffff !important;
+}
+
+.rbti-navbar .navbar-toggler {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+}
+
+.rbti-navbar .navbar-toggler:focus {
+  box-shadow: 0 0 0 3px rgba(222, 176, 79, 0.35);
+}
+
+/* ==========================================================================
+   Hero & Page Masthead (Editorial Architectural Grid)
+   ========================================================================== */
+.rbti-hero {
+  position: relative;
+  background:
+    radial-gradient(ellipse 75% 70% at 85% 20%, rgba(200, 146, 42, 0.18), transparent 60%),
+    radial-gradient(ellipse 65% 60% at 10% 90%, rgba(31, 71, 124, 0.55), transparent 60%),
+    linear-gradient(155deg, var(--rbti-navy-950) 0%, var(--rbti-navy-900) 52%, var(--rbti-navy-800) 100%);
+  color: #ffffff;
+  padding: 72px 0 84px;
+  overflow: hidden;
+  border-bottom: 3px solid var(--rbti-gold-500);
+}
+
+.rbti-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.25));
+  pointer-events: none;
+}
+
+.rbti-hero-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.rbti-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(222, 176, 79, 0.38);
+  color: var(--rbti-gold-400);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.rbti-hero-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2.25rem, 4.5vw, 3.6rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  margin-bottom: 18px;
+}
+
+.rbti-hero-lead {
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 560px;
+  margin-bottom: 28px;
+  font-weight: 400;
+}
+
+.rbti-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Editorial Hero Visual Panel (Right Side on Desktop) */
+.rbti-hero-visual {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-lg);
+  padding: 26px;
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-lg);
+}
+
+.rbti-hero-visual-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.rbti-hero-visual-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--rbti-gold-400);
+  font-weight: 600;
+}
+
+.rbti-hero-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.rbti-hero-metric {
+  background: rgba(9, 23, 43, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+}
+
+.rbti-hero-metric-val {
+  font-family: var(--font-serif);
+  font-size: 1.45rem;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.rbti-hero-metric-key {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.68);
+  margin-top: 2px;
+}
+
+/* Compact Page Masthead (Subpages: Catalog, Search, Borrowing, Admin) */
+.rbti-masthead {
+  position: relative;
+  background:
+    radial-gradient(ellipse 60% 80% at 92% 20%, rgba(200, 146, 42, 0.16), transparent 60%),
+    linear-gradient(155deg, var(--rbti-navy-950) 0%, var(--rbti-navy-900) 65%, var(--rbti-navy-800) 100%);
+  color: #ffffff;
+  padding: 40px 0 44px;
+  border-bottom: 3px solid var(--rbti-gold-500);
+  overflow: hidden;
+}
+
+.rbti-masthead::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+}
+
+.rbti-masthead-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.rbti-masthead h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 3vw, 2.4rem);
+  font-weight: 600;
+  margin: 0 0 6px;
+  color: #ffffff;
+  letter-spacing: -0.015em;
+}
+
+.rbti-masthead p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 0.96rem;
+  max-width: 620px;
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+.rbti-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--rbti-navy-900);
+  color: #ffffff !important;
+  border: 1px solid var(--rbti-navy-900);
+  border-radius: var(--radius-sm);
+  padding: 10px 20px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.rbti-btn-primary:hover {
+  background-color: var(--rbti-navy-700);
+  border-color: var(--rbti-navy-700);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(15, 37, 68, 0.22);
+}
+
+.rbti-btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--rbti-gold-500);
+  color: var(--rbti-navy-950) !important;
+  border: 1px solid var(--rbti-gold-500);
+  border-radius: var(--radius-sm);
+  padding: 11px 22px;
+  font-size: 0.94rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.rbti-btn-gold:hover {
+  background-color: var(--rbti-gold-400);
+  border-color: var(--rbti-gold-400);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(200, 146, 42, 0.32);
+}
+
+.rbti-btn-ghost-light {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: var(--radius-sm);
+  padding: 11px 22px;
+  font-size: 0.94rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.rbti-btn-ghost-light:hover {
+  background-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.rbti-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--rbti-surface);
+  color: var(--rbti-navy-900) !important;
+  border: 1px solid var(--rbti-border-strong);
+  border-radius: var(--radius-sm);
+  padding: 10px 18px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rbti-btn-outline:hover {
+  background-color: var(--rbti-navy-50);
+  border-color: var(--rbti-navy-700);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   Section & Cards (Home Services & Catalog)
+   ========================================================================== */
+.rbti-section {
+  padding: 56px 0;
+}
+
+.rbti-section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.rbti-section-kicker {
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--rbti-gold-600);
+  margin-bottom: 4px;
+}
+
+.rbti-section-title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-weight: 600;
+  color: var(--rbti-navy-900);
+  margin: 0;
+}
+
+/* Service Action Cards */
+.rbti-service-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--rbti-surface);
+  border: 1px solid var(--rbti-border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  text-decoration: none;
+  color: var(--rbti-ink-900);
+  box-shadow: var(--shadow-xs);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.rbti-service-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--rbti-navy-900), var(--rbti-gold-500));
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.rbti-service-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--rbti-border-strong);
+  color: var(--rbti-ink-900);
+}
+
+.rbti-service-card:hover::after {
+  opacity: 1;
+}
+
+.rbti-service-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  margin-bottom: 20px;
+  background: var(--rbti-navy-50);
+  color: var(--rbti-navy-800);
+  border: 1px solid var(--rbti-navy-100);
+}
+
+.rbti-service-icon--gold {
+  background: var(--rbti-gold-50);
+  color: var(--rbti-gold-600);
+  border-color: var(--rbti-gold-100);
+}
+
+.rbti-service-icon--emerald {
+  background: var(--rbti-success-bg);
+  color: var(--rbti-success);
+  border-color: rgba(21, 115, 71, 0.18);
+}
+
+.rbti-service-card h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--rbti-navy-900);
+  margin: 0 0 8px;
+}
+
+.rbti-service-card p {
+  font-size: 0.92rem;
+  color: var(--rbti-ink-500);
+  margin: 0 0 20px;
+  flex-grow: 1;
+}
+
+.rbti-service-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--rbti-navy-700);
+}
+
+.rbti-service-card:hover .rbti-service-cta i {
+  transform: translateX(4px);
+}
+
+.rbti-service-cta i {
+  transition: transform 0.2s ease;
+}
+
+/* Catalog Collection Cards */
+.rbti-catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.rbti-catalog-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--rbti-surface);
+  border: 1px solid var(--rbti-border);
+  border-radius: var(--radius-lg);
+  padding: 26px 24px;
+  text-decoration: none;
+  color: var(--rbti-ink-900);
+  box-shadow: var(--shadow-xs);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  height: 100%;
+}
+
+.rbti-catalog-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--rbti-gold-500);
+  color: var(--rbti-ink-900);
+}
+
+.rbti-catalog-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.rbti-catalog-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--rbti-bg);
+  color: var(--rbti-ink-500);
+  border: 1px solid var(--rbti-border);
+}
+
+.rbti-catalog-title {
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--rbti-navy-900);
+  margin: 0 0 6px;
+}
+
+.rbti-catalog-meta {
+  font-size: 0.85rem;
+  color: var(--rbti-ink-500);
+  margin: 0 0 18px;
+  flex-grow: 1;
+}
+
+.rbti-catalog-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--rbti-navy-700);
+}
+
+/* ==========================================================================
+   Search Bar & Data Panel
+   ========================================================================== */
+.rbti-search-panel {
+  background: var(--rbti-surface);
+  border: 1px solid var(--rbti-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  margin-top: -28px;
+  position: relative;
+  z-index: 2;
+}
+
+.rbti-search-form {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.rbti-search-input-wrap {
+  position: relative;
+  flex: 1 1 auto;
+}
+
+.rbti-search-input-wrap i {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--rbti-ink-400);
+  pointer-events: none;
+}
+
+.rbti-search-input {
+  width: 100%;
+  height: 48px;
+  padding: 10px 16px 10px 44px;
+  border: 1.5px solid var(--rbti-border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 0.96rem;
+  font-family: var(--font-sans);
+  color: var(--rbti-ink-900);
+  background: var(--rbti-surface-subtle);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.rbti-search-input:focus {
+  outline: none;
+  background: #ffffff;
+  border-color: var(--rbti-navy-700);
+  box-shadow: 0 0 0 4px rgba(31, 71, 124, 0.12);
+}
+
+/* Surface Card for Tables & Panels */
+.rbti-panel {
+  background: var(--rbti-surface);
+  border: 1px solid var(--rbti-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.rbti-panel-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--rbti-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: var(--rbti-surface-subtle);
+}
+
+.rbti-panel-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--rbti-navy-900);
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rbti-panel-body {
+  padding: 20px 24px;
+}
+
+/* Table Refinements */
+.rbti-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+table.rbti-table,
+table.dataTable.rbti-table {
+  width: 100% !important;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+
+table.rbti-table thead th {
+  background-color: var(--rbti-navy-50) !important;
+  color: var(--rbti-navy-900) !important;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 13px 14px !important;
+  border-bottom: 1.5px solid var(--rbti-border-strong) !important;
+  border-top: none !important;
+  white-space: nowrap;
+}
+
+table.rbti-table tbody td {
+  padding: 13px 14px !important;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--rbti-border) !important;
+  color: var(--rbti-ink-700);
+}
+
+table.rbti-table tbody tr:hover td {
+  background-color: var(--rbti-surface-subtle);
+}
+
+/* DataTables Controls Polish */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+  margin-bottom: 16px;
+  font-size: 0.88rem;
+  color: var(--rbti-ink-500);
+}
+
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select {
+  border: 1.5px solid var(--rbti-border-strong) !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 6px 10px !important;
+  font-size: 0.88rem !important;
+  color: var(--rbti-ink-900) !important;
+  background-color: #ffffff !important;
+}
+
+.dataTables_wrapper .dataTables_length select {
+  padding: 6px 28px 6px 12px !important;
+  min-width: 68px;
+}
+
+.dataTables_wrapper .dataTables_filter input:focus,
+.dataTables_wrapper .dataTables_length select:focus {
+  outline: none;
+  border-color: var(--rbti-navy-700) !important;
+  box-shadow: 0 0 0 3px rgba(31, 71, 124, 0.12) !important;
+}
+
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_paginate {
+  margin-top: 16px;
+  font-size: 0.86rem;
+  color: var(--rbti-ink-500);
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.page-item.active .page-link {
+  background: var(--rbti-navy-900) !important;
+  border-color: var(--rbti-navy-900) !important;
+  color: #ffffff !important;
+  border-radius: 6px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+  background: var(--rbti-navy-50) !important;
+  border-color: var(--rbti-border-strong) !important;
+  color: var(--rbti-navy-900) !important;
+  border-radius: 6px;
+}
+
+/* Status Pills */
+.rbti-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.rbti-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.rbti-badge--success {
+  background: var(--rbti-success-bg);
+  color: var(--rbti-success);
+}
+
+.rbti-badge--warning {
+  background: var(--rbti-warning-bg);
+  color: var(--rbti-warning);
+}
+
+.rbti-badge--danger {
+  background: var(--rbti-danger-bg);
+  color: var(--rbti-danger);
+}
+
+.rbti-badge--info {
+  background: var(--rbti-info-bg);
+  color: var(--rbti-info);
+}
+
+.rbti-badge--neutral {
+  background: #edf0f5;
+  color: var(--rbti-ink-700);
+}
+
+/* Action Buttons inside Tables */
+.rbti-action-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.rbti-btn-sm {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.btn-outline-warning.rbti-btn-sm {
+  color: var(--rbti-warning);
+  border-color: #d9a441;
+}
+
+.btn-outline-warning.rbti-btn-sm:hover {
+  background-color: var(--rbti-gold-500);
+  border-color: var(--rbti-gold-500);
+  color: var(--rbti-navy-950);
+}
+
+/* Modals */
+.modal-content {
+  border: 1px solid var(--rbti-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.modal-header {
+  background: var(--rbti-surface-subtle);
+  border-bottom: 1px solid var(--rbti-border);
+  padding: 18px 22px;
+}
+
+.modal-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--rbti-navy-900);
+}
+
+.modal-body {
+  padding: 22px;
+}
+
+.form-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--rbti-ink-700);
+  margin-bottom: 6px;
+}
+
+.form-control,
+.form-select {
+  border: 1.5px solid var(--rbti-border-strong);
+  border-radius: var(--radius-sm);
+  padding: 9px 13px;
+  font-size: 0.92rem;
+  color: var(--rbti-ink-900);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--rbti-navy-700);
+  box-shadow: 0 0 0 3px rgba(31, 71, 124, 0.14);
+}
+
+/* Select2 Polish */
+.select2-container--default .select2-selection--single {
+  height: 44px !important;
+  border: 1.5px solid var(--rbti-border-strong) !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 6px 10px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+  height: 42px !important;
+}
+
+/* ==========================================================================
+   Authentication / Portal Entry Page (register.php)
+   ========================================================================== */
+body.rbti-auth-page {
+  background:
+    radial-gradient(ellipse 70% 60% at 15% 15%, rgba(200, 146, 42, 0.16), transparent 55%),
+    radial-gradient(ellipse 70% 60% at 85% 85%, rgba(31, 71, 124, 0.45), transparent 55%),
+    linear-gradient(160deg, var(--rbti-navy-950) 0%, var(--rbti-navy-900) 55%, #122d52 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px 140px;
+  position: relative;
+}
+
+body.rbti-auth-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events: none;
+}
+
+.rbti-auth-shell {
+  width: 100%;
+  max-width: 452px;
+  position: relative;
+  z-index: 2;
+}
+
+.rbti-auth-card {
+  background: var(--rbti-surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 28px 64px rgba(5, 14, 28, 0.42);
+  padding: 36px 34px 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+.rbti-auth-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--rbti-navy-900) 0%, var(--rbti-gold-500) 55%, var(--rbti-navy-700) 100%);
+}
+
+.rbti-auth-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.rbti-auth-emblem {
+  height: 46px;
+  width: auto;
+  max-width: 240px;
+  object-fit: contain;
+  margin: 0 auto 16px;
+  display: block;
+}
+
+.rbti-auth-title {
+  font-family: var(--font-serif);
+  font-size: 1.55rem;
+  font-weight: 600;
+  color: var(--rbti-navy-900);
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+
+.rbti-auth-subtitle {
+  font-size: 0.84rem;
+  color: var(--rbti-ink-500);
+  margin: 0;
+}
+
+/* Role Segmented Control */
+.rbti-role-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  background: var(--rbti-bg);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--rbti-border);
+  margin-bottom: 24px;
+}
+
+.rbti-role-tab {
+  border: none;
+  background: transparent;
+  color: var(--rbti-ink-500);
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  font-weight: 600;
+  padding: 9px 8px;
+  border-radius: 9px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.rbti-role-tab:hover {
+  color: var(--rbti-navy-900);
+}
+
+.rbti-role-tab.active {
+  background: var(--rbti-surface);
+  color: var(--rbti-navy-900);
+  box-shadow: 0 2px 6px rgba(15, 37, 68, 0.1);
+}
+
+.rbti-role-tab.active i {
+  color: var(--rbti-gold-600);
+}
+
+.rbti-auth-section {
+  display: none;
+}
+
+.rbti-auth-section.active {
+  display: block;
+  animation: rbtiFadeIn 0.24s ease;
+}
+
+@keyframes rbtiFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rbti-field {
+  margin-bottom: 16px;
+}
+
+.rbti-field label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--rbti-ink-700);
+  margin-bottom: 6px;
+}
+
+.rbti-input-wrap {
+  position: relative;
+}
+
+.rbti-input-wrap i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--rbti-ink-400);
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+.rbti-input-wrap input {
+  width: 100%;
+  height: 46px;
+  padding: 10px 14px 10px 40px;
+  border: 1.5px solid var(--rbti-border-strong);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 0.94rem;
+  color: var(--rbti-ink-900);
+  background: var(--rbti-surface-subtle);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.rbti-input-wrap input:focus {
+  outline: none;
+  background: #ffffff;
+  border-color: var(--rbti-navy-700);
+  box-shadow: 0 0 0 3.5px rgba(31, 71, 124, 0.12);
+}
+
+.rbti-auth-submit {
+  width: 100%;
+  height: 46px;
+  margin-top: 6px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--rbti-navy-900);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 0.94rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.rbti-auth-submit:hover {
+  background: var(--rbti-navy-700);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(15, 37, 68, 0.24);
+}
+
+.rbti-auth-submit:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.rbti-auth-switch {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--rbti-border);
+  text-align: center;
+  font-size: 0.86rem;
+  color: var(--rbti-ink-500);
+}
+
+.rbti-auth-link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--rbti-navy-700);
+  font-weight: 600;
+  font-family: var(--font-sans);
+  font-size: 0.86rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.rbti-auth-link-btn:hover {
+  color: var(--rbti-gold-600);
+}
+
+.rbti-auth-alert {
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.86rem;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.rbti-auth-alert--error {
+  background: var(--rbti-danger-bg);
+  color: var(--rbti-danger);
+  border: 1px solid rgba(180, 35, 24, 0.22);
+}
+
+.rbti-auth-alert--success {
+  background: var(--rbti-success-bg);
+  color: var(--rbti-success);
+  border: 1px solid rgba(21, 115, 71, 0.22);
+}
+
+.rbti-auth-footer {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.56);
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+.rbti-footer {
+  margin-top: auto;
+  background: var(--rbti-navy-950);
+  color: rgba(255, 255, 255, 0.72);
+  border-top: 2px solid rgba(200, 146, 42, 0.45);
+  padding: 24px 0;
+  font-size: 0.85rem;
+}
+
+.rbti-footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rbti-footer strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   Responsive Breakpoints
+   ========================================================================== */
+@media (max-width: 991.98px) {
+  .rbti-navbar {
+    height: auto;
+    min-height: var(--nav-height);
+    padding: 10px 0;
+  }
+
+  .rbti-navbar .navbar-collapse {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .rbti-navbar .nav-link {
+    width: 100%;
+    padding: 10px 14px !important;
+  }
+
+  .rbti-hero {
+    padding: 52px 0 60px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .rbti-masthead {
+    padding: 30px 0 34px;
+  }
+
+  .rbti-section {
+    padding: 36px 0;
+  }
+
+  .rbti-search-form {
+    flex-direction: column;
+  }
+
+  .rbti-search-form .rbti-btn-primary {
+    width: 100%;
+    height: 46px;
+  }
+
+  .rbti-panel-header,
+  .rbti-panel-body {
+    padding: 16px;
+  }
+
+  .rbti-auth-card {
+    padding: 28px 22px 24px;
+  }
+
+  .rbti-role-tab {
+    font-size: 0.78rem;
+    padding: 8px 4px;
+    gap: 4px;
+  }
+
+  .rbti-footer-inner {
+    flex-direction: column;
+    text-align: center;
+  }
+}
