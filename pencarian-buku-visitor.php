@@ -1,23 +1,13 @@
 <?php
-// Koneksi database
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "rbti";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Cek koneksi
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+require_once 'db_connect.php';
 
 // Jika ada permintaan pencarian Ajax
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['query'])) {
-    $searchQuery = '%' . $_POST['query'] . '%';
-    $query = "SELECT * FROM Book WHERE title LIKE ? OR author LIKE ? OR genre LIKE ?";
+    header('Content-Type: application/json');
+    $searchQuery = '%' . trim($_POST['query']) . '%';
+    $query = "SELECT * FROM Book WHERE title LIKE ? OR author LIKE ? OR genre LIKE ? ORDER BY bookID DESC";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("sss", $searchQuery, $searchQuery, $searchQuery);
+    $stmt->bind_param('sss', $searchQuery, $searchQuery, $searchQuery);
     $stmt->execute();
     $result = $stmt->get_result();
     $books = [];
