@@ -1,3 +1,7 @@
+<?php
+require_once 'auth.php';
+rbti_require_admin();
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -71,6 +75,7 @@
                   <tr>
                     <th>ID</th>
                     <th>Nama</th>
+                    <th>NIM</th>
                     <th>Email</th>
                     <th>Status</th>
                     <th>Aksi</th>
@@ -122,6 +127,12 @@
               return '<strong style="color: var(--rbti-ink-900);">' + $('<div>').text(data).html() + '</strong>';
             }
           },
+          {
+            data: 'nim',
+            render: function (data) {
+              return $('<div>').text(data || '-').html();
+            }
+          },
           { data: 'email' },
           {
             data: 'status',
@@ -136,7 +147,10 @@
             orderable: false,
             render: function (data) {
               return data.status === 'pending'
-                ? `<button class="btn btn-success rbti-btn-sm btn-approve" data-id="${data.id}"><i class="fas fa-check"></i> Approve</button>`
+                ? `<div class="rbti-action-group">
+                    <button class="btn btn-success rbti-btn-sm btn-approve" data-id="${data.id}"><i class="fas fa-check"></i> Approve</button>
+                    <button class="btn btn-outline-danger rbti-btn-sm btn-reject" data-id="${data.id}"><i class="fas fa-times"></i> Reject</button>
+                  </div>`
                 : '<span class="text-muted small">Terverifikasi</span>';
             }
           }
@@ -171,6 +185,23 @@
           },
           error: function () {
             showToast('Gagal menyetujui anggota!', false);
+          }
+        });
+      });
+
+      $('#membersTable').on('click', '.btn-reject', function () {
+        const memberId = $(this).data('id');
+        if (!confirm('Tolak dan hapus pendaftaran anggota ini?')) return;
+        $.ajax({
+          url: 'approve_member.php',
+          method: 'POST',
+          data: { reject_id: memberId },
+          success: function () {
+            table.ajax.reload();
+            showToast('Pendaftaran anggota ditolak.', true);
+          },
+          error: function () {
+            showToast('Gagal menolak pendaftaran.', false);
           }
         });
       });

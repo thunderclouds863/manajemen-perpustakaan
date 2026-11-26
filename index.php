@@ -1,13 +1,66 @@
 <?php
-session_start();
+require_once 'auth.php';
+rbti_require_member();
+require_once 'db_connect.php';
 
-// Periksa apakah pengguna sudah login
-if (!isset($_SESSION['user_id'])) {
-    header('Location: register.php');
-    exit();
+$userID = (int) $_SESSION['user_id'];
+$memberName = $_SESSION['user_name'] ?? 'Anggota RBTI';
+
+// Handle mark-all-read notification action
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'mark_read') {
+    $markStmt = $conn->prepare("UPDATE Notification SET status = 'read' WHERE userID = ? AND status = 'unread'");
+    if ($markStmt) {
+        $markStmt->bind_param('i', $userID);
+        $markStmt->execute();
+        $markStmt->close();
+    }
+    header('Location: index.php');
+    exit;
 }
 
-$memberName = $_SESSION['user_name'] ?? 'Anggota RBTI';
+// Fetch live member statistics
+$activeBorrows = 0;
+$pendingBorrows = 0;
+$returnedBorrows = 0;
+$totalBooks = 0;
+$notifications = [];
+
+$statStmt = $conn->prepare(
+    "SELECT
+        SUM(CASE WHEN status IN ('borrowed', 'extended', 'overdue') THEN 1 ELSE 0 END) AS active_cnt,
+        SUM(CASE WHEN status IN ('borrow pending', 'extend pending', 'return pending') THEN 1 ELSE 0 END) AS pending_cnt,
+        SUM(CASE WHEN status = 'returned' THEN 1 ELSE 0 END) AS returned_cnt
+     FROM Borrow WHERE userID = ?"
+);
+if ($statStmt) {
+    $statStmt->bind_param('i', $userID);
+    $statStmt->execute();
+    $row = $statStmt->get_result()->fetch_assoc();
+    if ($row) {
+        $activeBorrows = (int) ($row['active_cnt'] ?? 0);
+        $pendingBorrows = (int) ($row['pending_cnt'] ?? 0);
+        $returnedBorrows = (int) ($row['returned_cnt'] ?? 0);
+    }
+    $statStmt->close();
+}
+
+$bookRes = $conn->query("SELECT COUNT(*) AS cnt FROM Book");
+if ($bookRes) {
+    $totalBooks = (int) ($bookRes->fetch_assoc()['cnt'] ?? 0);
+}
+
+$notifStmt = $conn->prepare("SELECT notificationID, message, date, status FROM Notification WHERE userID = ? ORDER BY date DESC LIMIT 5");
+if ($notifStmt) {
+    $notifStmt->bind_param('i', $userID);
+    $notifStmt->execute();
+    $nRes = $notifStmt->get_result();
+    while ($n = $nRes->fetch_assoc()) {
+        $notifications[] = $n;
+    }
+    $notifStmt->close();
+}
+
+$unreadCount = count(array_filter($notifications, fn($n) => ($n['status'] ?? '') === 'unread'));
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -83,25 +136,25 @@ $memberName = $_SESSION['user_name'] ?? 'Anggota RBTI';
           <div class="col-lg-5">
             <div class="rbti-hero-visual">
               <div class="rbti-hero-visual-header">
-                <span class="rbti-hero-visual-label">Ringkasan Layanan Anggota</span>
+                <span class="rbti-hero-visual-label">Ringkasan Aktivitas Anda</span>
                 <i class="fas fa-book-reader" style="color: var(--rbti-gold-400);"></i>
               </div>
               <div class="rbti-hero-metrics">
                 <div class="rbti-hero-metric">
-                  <div class="rbti-hero-metric-val">5 Kategori</div>
-                  <div class="rbti-hero-metric-key">Buku, KP, TA &amp; Tesis</div>
+                  <div class="rbti-hero-metric-val"><?= $activeBorrows ?></div>
+                  <div class="rbti-hero-metric-key">Sedang Dipinjam</div>
                 </div>
                 <div class="rbti-hero-metric">
-                  <div class="rbti-hero-metric-val">14 Hari</div>
-                  <div class="rbti-hero-metric-key">Masa pinjam standar</div>
+                  <div class="rbti-hero-metric-val"><?= $pendingBorrows ?></div>
+                  <div class="rbti-hero-metric-key">Menunggu Persetujuan</div>
                 </div>
                 <div class="rbti-hero-metric">
-                  <div class="rbti-hero-metric-val">Perpanjangan</div>
-                  <div class="rbti-hero-metric-key">Ajukan langsung online</div>
+                  <div class="rbti-hero-metric-val"><?= $returnedBorrows ?></div>
+                  <div class="rbti-hero-metric-key">Selesai Dikembalikan</div>
                 </div>
                 <div class="rbti-hero-metric">
-                  <div class="rbti-hero-metric-val">Sirkulasi</div>
-                  <div class="rbti-hero-metric-key">Status stok real-time</div>
+                  <div class="rbti-hero-metric-val"><?= $totalBooks ?></div>
+                  <div class="rbti-hero-metric-key">Total Judul Buku</div>
                 </div>
               </div>
             </div>
@@ -109,6 +162,46 @@ $memberName = $_SESSION['user_name'] ?? 'Anggota RBTI';
         </div>
       </div>
     </section>
+
+    <?php if (!empty($notifications)): ?>
+    <section class="pt-5 pb-0">
+      <div class="container">
+        <div class="rbti-panel">
+          <div class="rbti-panel-header">
+            <h2 class="rbti-panel-title">
+              <i class="fas fa-bell"></i> Notifikasi Terbaru
+              <?php if ($unreadCount > 0): ?>
+                <span class="rbti-badge rbti-badge--warning"><?= $unreadCount ?> baru</span>
+              <?php endif; ?>
+            </h2>
+            <?php if ($unreadCount > 0): ?>
+              <form method="POST" action="index.php" class="m-0">
+                <input type="hidden" name="action" value="mark_read">
+                <button type="submit" class="rbti-btn-outline rbti-btn-sm">
+                  <i class="fas fa-check-double"></i> Tandai Sudah Dibaca
+                </button>
+              </form>
+            <?php endif; ?>
+          </div>
+          <div class="rbti-panel-body py-2">
+            <ul class="list-unstyled mb-0">
+              <?php foreach ($notifications as $notif): ?>
+                <li class="d-flex justify-content-between align-items-start gap-3 py-2 border-bottom">
+                  <div class="d-flex align-items-start gap-2">
+                    <i class="fas fa-circle mt-2" style="font-size: 0.45rem; color: <?= ($notif['status'] === 'unread') ? 'var(--rbti-gold-500)' : 'var(--rbti-border-strong)' ?>;"></i>
+                    <span style="font-size: 0.9rem; font-weight: <?= ($notif['status'] === 'unread') ? '600' : '400' ?>;">
+                      <?= htmlspecialchars($notif['message']) ?>
+                    </span>
+                  </div>
+                  <span class="text-muted small text-nowrap"><?= htmlspecialchars(date('d M Y', strtotime($notif['date']))) ?></span>
+                </li>
+              <?php endforeach; ?>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+    <?php endif; ?>
 
     <section class="rbti-section">
       <div class="container">

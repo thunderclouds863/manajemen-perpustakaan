@@ -1,3 +1,7 @@
+<?php
+require_once 'auth.php';
+rbti_require_admin();
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -77,6 +81,7 @@
                 <thead>
                   <tr>
                     <th>ID</th>
+                    <th>Anggota</th>
                     <th>Buku</th>
                     <th>Tanggal Pinjam</th>
                     <th>Tanggal Kembali</th>
@@ -130,28 +135,40 @@
             tbody.empty();
 
             if (!response || response.length === 0) {
-              tbody.append('<tr><td colspan="6" class="text-center py-4 text-muted">Belum ada catatan peminjaman.</td></tr>');
+              tbody.append('<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada catatan peminjaman.</td></tr>');
               return;
             }
 
             response.forEach(function (item) {
-              const bClass = badgeClassFor(item.status);
+              const displayStatus = item.isOverdue ? 'overdue' : item.status;
+              const bClass = badgeClassFor(displayStatus);
               let actionHtml = '<span class="text-muted small">&mdash;</span>';
               if (item.status === 'borrow pending') {
-                actionHtml = `<button class="btn btn-success rbti-btn-sm confirm-btn" data-id="${item.borrowID}" data-action="borrowing"><i class="fas fa-check"></i> Confirm Borrowing</button>`;
+                actionHtml = `<div class="rbti-action-group">
+                  <button class="btn btn-success rbti-btn-sm confirm-btn" data-id="${item.borrowID}" data-action="borrowing"><i class="fas fa-check"></i> Approve</button>
+                  <button class="btn btn-outline-danger rbti-btn-sm confirm-btn" data-id="${item.borrowID}" data-action="reject_borrowing"><i class="fas fa-times"></i> Reject</button>
+                </div>`;
               } else if (item.status === 'extend pending') {
-                actionHtml = `<button class="btn btn-warning rbti-btn-sm confirm-btn" data-id="${item.borrowID}" data-action="extending"><i class="fas fa-clock"></i> Confirm Extending</button>`;
+                actionHtml = `<div class="rbti-action-group">
+                  <button class="btn btn-warning rbti-btn-sm confirm-btn" data-id="${item.borrowID}" data-action="extending"><i class="fas fa-clock"></i> Approve</button>
+                  <button class="btn btn-outline-danger rbti-btn-sm confirm-btn" data-id="${item.borrowID}" data-action="reject_extending"><i class="fas fa-times"></i> Reject</button>
+                </div>`;
               } else if (item.status === 'return pending') {
-                actionHtml = `<button class="btn btn-danger rbti-btn-sm confirm-btn" data-id="${item.borrowID}" data-action="returning"><i class="fas fa-undo"></i> Confirm Returning</button>`;
+                actionHtml = `<button class="btn btn-primary rbti-btn-sm confirm-btn" data-id="${item.borrowID}" data-action="returning"><i class="fas fa-undo"></i> Confirm Return</button>`;
               }
+
+              const memberLabel = item.userName
+                ? $('<div>').text(item.userName).html()
+                : ('User #' + (item.userID || '-'));
 
               tbody.append(`
                 <tr>
                   <td>#${item.borrowID || '-'}</td>
-                  <td><strong style="color: var(--rbti-ink-900);">${item.bookTitle || item.bookID || '-'}</strong></td>
+                  <td>${memberLabel}</td>
+                  <td><strong style="color: var(--rbti-ink-900);">${$('<div>').text(item.bookTitle || item.bookID || '-').html()}</strong></td>
                   <td>${item.borrowDate || '-'}</td>
                   <td>${item.returnDate || '-'}</td>
-                  <td><span class="rbti-badge ${bClass}">${item.status}</span></td>
+                  <td><span class="rbti-badge ${bClass}">${displayStatus}</span></td>
                   <td>${actionHtml}</td>
                 </tr>
               `);
@@ -184,12 +201,13 @@
         const rows = document.querySelectorAll('#borrowTable tbody tr');
 
         rows.forEach(function (row) {
-          if (row.cells.length < 5) return;
+          if (row.cells.length < 6) return;
           const borrowID = row.cells[0].textContent.toLowerCase();
-          const bookInfo = row.cells[1].textContent.toLowerCase();
-          const status = row.cells[4].textContent.toLowerCase();
+          const memberName = row.cells[1].textContent.toLowerCase();
+          const bookInfo = row.cells[2].textContent.toLowerCase();
+          const status = row.cells[5].textContent.toLowerCase();
 
-          row.style.display = (bookInfo.includes(filter) || borrowID.includes(filter) || status.includes(filter)) ? '' : 'none';
+          row.style.display = (bookInfo.includes(filter) || memberName.includes(filter) || borrowID.includes(filter) || status.includes(filter)) ? '' : 'none';
         });
       });
 
