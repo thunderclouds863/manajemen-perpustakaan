@@ -49,54 +49,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             exit;
         }
 
-        $bkStmt = $conn->prepare("SELECT bookID, title, availableCopies, status, genre FROM Book WHERE bookID = ?");
-        $bkStmt->bind_param('i', $bookID);
-        $bkStmt->execute();
-        $book = $bkStmt->get_result()->fetch_assoc();
-        $bkStmt->close();
+        $conn->begin_transaction();
+        try {
+            // Lock book row to serialize concurrent borrow requests for this title
+            $bkStmt = $conn->prepare("SELECT bookID, title, availableCopies, status, genre FROM Book WHERE bookID = ? FOR UPDATE");
+            $bkStmt->bind_param('i', $bookID);
+            $bkStmt->execute();
+            $book = $bkStmt->get_result()->fetch_assoc();
+            $bkStmt->close();
 
-        if (!$book) {
-            echo json_encode(['success' => false, 'message' => 'Buku tidak ditemukan.']);
-            exit;
+            if (!$book) {
+                $conn->rollback();
+                echo json_encode(['success' => false, 'message' => 'Buku tidak ditemukan.']);
+                exit;
+            }
+
+            if ((int) $book['availableCopies'] <= 0 || $book['status'] === 'unavailable') {
+                $conn->rollback();
+                echo json_encode(['success' => false, 'message' => 'Buku sedang tidak tersedia untuk dipinjam.']);
+                exit;
+            }
+
+            if (in_array($book['genre'], ['Referensi', 'Tugas Akhir', 'KP', 'Thesis'], true)) {
+                $conn->rollback();
+                echo json_encode(['success' => false, 'message' => 'Koleksi referensi/arsip hanya dapat dibaca di tempat.']);
+                exit;
+            }
+
+            // Prevent duplicate active/pending borrow of the same book by the same member
+            $dupStmt = $conn->prepare(
+                "SELECT COUNT(*) AS cnt FROM Borrow
+                 WHERE userID = ? AND bookID = ? AND status IN ('borrow pending', 'borrowed', 'extended', 'extend pending', 'return pending')
+                 FOR UPDATE"
+            );
+            $dupStmt->bind_param('ii', $userID, $bookID);
+            $dupStmt->execute();
+            $dupCount = (int) ($dupStmt->get_result()->fetch_assoc()['cnt'] ?? 0);
+            $dupStmt->close();
+
+            if ($dupCount > 0) {
+                $conn->rollback();
+                echo json_encode(['success' => false, 'message' => 'Anda sudah memiliki permintaan atau pinjaman aktif untuk buku ini.']);
+                exit;
+            }
+
+            $borrowDate = date('Y-m-d');
+            $returnDate = date('Y-m-d', strtotime('+14 days'));
+            $status = 'borrow pending';
+
+            // Insert borrowing request (availableCopies is decremented once upon admin confirmation in proses-pinjam.php)
+            $insStmt = $conn->prepare("INSERT INTO Borrow (userID, bookID, borrowDate, returnDate, status) VALUES (?, ?, ?, ?, ?)");
+            $insStmt->bind_param('iisss', $userID, $bookID, $borrowDate, $returnDate, $status);
+            $insStmt->execute();
+            $ok = $insStmt->affected_rows > 0;
+            $insStmt->close();
+
+            $conn->commit();
+            echo json_encode(['success' => $ok, 'message' => $ok ? 'Permintaan peminjaman berhasil dikirim! Menunggu persetujuan admin.' : 'Gagal mengajukan peminjaman.']);
+        } catch (Exception $e) {
+            $conn->rollback();
+            echo json_encode(['success' => false, 'message' => 'Terjadi kesalahan saat mengajukan peminjaman.']);
         }
-
-        if ((int) $book['availableCopies'] <= 0 || $book['status'] === 'unavailable') {
-            echo json_encode(['success' => false, 'message' => 'Buku sedang tidak tersedia untuk dipinjam.']);
-            exit;
-        }
-
-        if (in_array($book['genre'], ['Referensi', 'Tugas Akhir', 'KP', 'Thesis'], true)) {
-            echo json_encode(['success' => false, 'message' => 'Koleksi referensi/arsip hanya dapat dibaca di tempat.']);
-            exit;
-        }
-
-        // Prevent duplicate active/pending borrow of the same book by the same member
-        $dupStmt = $conn->prepare(
-            "SELECT COUNT(*) AS cnt FROM Borrow
-             WHERE userID = ? AND bookID = ? AND status IN ('borrow pending', 'borrowed', 'extended', 'extend pending', 'return pending')"
-        );
-        $dupStmt->bind_param('ii', $userID, $bookID);
-        $dupStmt->execute();
-        $dupCount = (int) ($dupStmt->get_result()->fetch_assoc()['cnt'] ?? 0);
-        $dupStmt->close();
-
-        if ($dupCount > 0) {
-            echo json_encode(['success' => false, 'message' => 'Anda sudah memiliki permintaan atau pinjaman aktif untuk buku ini.']);
-            exit;
-        }
-
-        $borrowDate = date('Y-m-d');
-        $returnDate = date('Y-m-d', strtotime('+14 days'));
-        $status = 'borrow pending';
-
-        // Insert borrowing request (availableCopies is decremented once upon admin confirmation in proses-pinjam.php)
-        $insStmt = $conn->prepare("INSERT INTO Borrow (userID, bookID, borrowDate, returnDate, status) VALUES (?, ?, ?, ?, ?)");
-        $insStmt->bind_param('iisss', $userID, $bookID, $borrowDate, $returnDate, $status);
-        $insStmt->execute();
-        $ok = $insStmt->affected_rows > 0;
-        $insStmt->close();
-
-        echo json_encode(['success' => $ok, 'message' => $ok ? 'Permintaan peminjaman berhasil dikirim! Menunggu persetujuan admin.' : 'Gagal mengajukan peminjaman.']);
     } elseif ($action === 'return') {
         $borrowID = (int) ($_POST['borrowID'] ?? 0);
         $updStmt = $conn->prepare(

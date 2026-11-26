@@ -38,18 +38,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenValid && $resetRow) {
         try {
             $pdo->beginTransaction();
 
-            $hash = password_hash($newPassword, PASSWORD_DEFAULT);
-            $u1 = $pdo->prepare("UPDATE users SET password = :pw WHERE id = :uid");
-            $u1->execute([':pw' => $hash, ':uid' => $resetRow['user_id']]);
-
-            $u2 = $pdo->prepare("UPDATE password_resets SET used_at = NOW() WHERE id = :id");
+            $u2 = $pdo->prepare("UPDATE password_resets SET used_at = NOW() WHERE id = :id AND used_at IS NULL AND expires_at > NOW()");
             $u2->execute([':id' => $resetRow['id']]);
+            if ($u2->rowCount() !== 1) {
+                $pdo->rollBack();
+                $tokenValid = false;
+                $errorMsg = 'Tautan reset password sudah digunakan atau kedaluwarsa.';
+            } else {
+                $hash = password_hash($newPassword, PASSWORD_DEFAULT);
+                $u1 = $pdo->prepare("UPDATE users SET password = :pw WHERE id = :uid");
+                $u1->execute([':pw' => $hash, ':uid' => $resetRow['user_id']]);
 
-            $pdo->commit();
+                $pdo->commit();
 
-            $_SESSION['success'] = 'Password berhasil diperbarui. Silakan login dengan password baru Anda.';
-            header('Location: register.php#member-section');
-            exit();
+                $_SESSION['success'] = 'Password berhasil diperbarui. Silakan login dengan password baru Anda.';
+                header('Location: register.php#member-section');
+                exit();
+            }
         } catch (Exception $e) {
             if ($pdo->inTransaction()) {
                 $pdo->rollBack();
