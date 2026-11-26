@@ -35,10 +35,25 @@ Buka `http://localhost:10000/register.php`. Database `rbti` dan akun demo diimpo
 
 ### Opsi 2: XAMPP / Local PHP + MySQL/MariaDB
 
+**Prasyarat:**
+- PHP **8.2+** dengan ekstensi: `mysqli`, `pdo_mysql`, `mbstring`, `openssl`, `gd`, `zip`
+- MariaDB **10.6+ / 11.4+** atau MySQL **8.0+**
+- Composer 2+
+
+**Langkah Setup:**
 1. Salin `.env.example` dan sesuaikan variabel lingkungan (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`, `APP_URL`) bila berbeda dari default (`localhost`, `3306`, `rbti`, `root`, password kosong).
 2. Jalankan `composer install`.
-3. Impor skema database `rbti.sql` (dan opsional `deploy/demo_seed.sql` untuk data contoh) ke MySQL/MariaDB.
-4. Akses aplikasi melalui Apache/PHP di `http://localhost/manajemen-perpustakaan/register.php`.
+3. Buat database baru (mis. `rbti` atau `rbti_test` untuk pengujian) dan impor `rbti.sql` (serta opsional `deploy/demo_seed.sql` untuk data contoh).
+4. Jalankan server lokal (`php -S 127.0.0.1:8088` atau Apache XAMPP) dan buka `http://127.0.0.1:8088/register.php`.
+
+## Pengujian Otomatis (E2E & Integritas Transaksi)
+
+Suite pengujian integrasi otomatis tersedia di `tests/integration_e2e.cjs` (menggunakan Playwright terhadap server PHP + MariaDB nyata). Suite ini memverifikasi RBAC, registrasi/persetujuan anggota, CRUD buku + upload CSV, sirkulasi (pinjam, perpanjang maks. 2x, tolak, kembalikan), kondisi balap (*concurrency*) stok terbatas, serta alur reset password sekali pakai.
+
+```bash
+# Pastikan server PHP berjalan melawan database uji terisolasi (mis. rbti_test)
+RBTI_BASE_URL=http://127.0.0.1:8088 node tests/integration_e2e.cjs
+```
 
 ### Akun Demo (Jika `deploy/demo_seed.sql` Diimpor)
 
