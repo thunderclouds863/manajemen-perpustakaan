@@ -8,7 +8,7 @@ if ($password === false) {
 }
 $dbname = getenv('DB_NAME') ?: 'rbti';
 
-$conn = new mysqli($servername, $username, $password, $dbname, $dbPort);
+$conn = demo_mysqli($servername, $username, $password, $dbname, $dbPort);
 
 if ($conn->connect_error) {
     http_response_code(500);
